@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecobin - Waste Management System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --primary-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        /* --- Header / Demo Bar --- */
+        .demo-bar {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section i {
+            color: var(--accent-color);
+            -webkit-text-fill-color: initial;
+        }
+
+        .demo-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .demo-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .role-badge-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .role-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .role-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .role-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        /* --- Page Wrapper --- */
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* --- Toast Notification --- */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            margin-top: 10px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            transform: translateY(50px);
+            opacity: 0;
+            animation: slideIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.success { border-left: 4px solid var(--accent-color); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.info { border-left: 4px solid var(--info); }
+
+        @keyframes slideIn {
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Auth Section --- */
+        .auth-container {
+            max-width: 480px;
+            width: 100%;
+            margin: 60px auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .auth-header {
+            text-align: center;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-tab-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* --- Forms System --- */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 10px 20px -10px rgba(239, 68, 68, 0.5);
+        }
+
+        /* --- Layout: Main Panel --- */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 30px;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            height: fit-content;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .profile-info h4 {
+            font-size: 0.95rem;
+        }
+
+        .profile-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+        }
+
+        .nav-item-btn:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+        }
+
+        .nav-item-btn.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-color);
+            border-left: 3px solid var(--accent-color);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding-left: 13px;
+        }
+
+        /* --- Content Screens --- */
+        .screen-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Metrics & Cards Grid --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .metric-card.danger::before { background: var(--danger); }
+        .metric-card.warning::before { background: var(--warning); }
+        .metric-card.info::before { background: var(--info); }
+
+        .metric-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .metric-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Detailed Dashboard Panels --- */
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 15px;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* --- Tables --- */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--card-border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .badge-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+        /* --- Custom UI Cards (Eco-wallet / Voucher) --- */
+        .eco-wallet-card {
+            background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .eco-wallet-card::after {
+            content: '\f4c6'; /* Leaf icon */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 10rem;
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            color: rgba(16, 185, 129, 0.04);
+            pointer-events: none;
+        }
+
+        .wallet-amount {
+            font-size: 2.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: #34d399;
+            margin-top: 8px;
+        }
+
+        /* --- Payment Gateway Simulated Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: #1e293b;
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: modalScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalScale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .credit-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            border-radius: 4px;
+        }
+
+        /* --- Grid Utilities --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- --- Header with Demo Controls --- -->
+    <header class="demo-bar">
+        <div class="logo-section">
+            <i class="fa-solid fa-leaf"></i>
+            <span>EcoBin</span>
+        </div>
+        <div class="demo-controls">
+            <span class="demo-label">Demo Role Switcher</span>
+            <div class="role-badge-container">
+                <button class="role-btn active" onclick="switchDemoRole('GUEST')">Guest User</button>
+                <button class="role-btn" onclick="switchDemoRole('USER')">Registered User</button>
+                <button class="role-btn" onclick="switchDemoRole('WORKER')">Collection Worker</button>
+                <button class="role-btn" onclick="switchDemoRole('STAFF')">Office Staff</button>
+                <button class="role-btn" onclick="switchDemoRole('ADMIN')">Admin</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- --- Toast notification system --- -->
+        <div id="toast-container"></div>
+
+        <!-- --- Auth Screen (Dynamic for roles) --- -->
+        <section id="auth-screen" class="screen active">
+            <!-- This will toggle between Login/Register or load Dashboard depending on role -->
+            <div class="auth-container" id="auth-box">
+                <div class="auth-header">
+                    <h2 id="auth-title">Guest Premises Report</h2>
+                    <p id="auth-subtitle">Submit details of waste seen in your neighborhood anonymously.</p>
+                </div>
+                
+                <div id="auth-form-container">
+                    <!-- Guest Report Form (Default Active View) -->
+                    <form id="guest-report-form" onsubmit="submitGuestReport(event)">
+                        <div class="form-group">
+                            <label for="guest-reporter">Your Name (Optional)</label>
+                            <input type="text" id="guest-reporter" class="form-control" placeholder="Anonymous">
+                        </div>
+                        <div class="form-group">
+                            <label for="guest-phone">Contact Phone (Optional)</label>
+                            <input type="text" id="guest-phone" class="form-control" placeholder="E.g., 555-0100">
+                        </div>
+                        <div class="form-group">
+                            <label for="guest-area">Select Neighborhood Area</label>
+                            <select id="guest-area" class="form-control" required>
+                                <option value="North Zone">North Zone</option>
+                                <option value="South Zone">South Zone</option>
+                                <option value="East Zone">East Zone</option>
+                                <option value="West Zone">West Zone</option>
+                                <option value="Central Zone">Central Zone</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="guest-address">Exact Location/Address</label>
+                            <input type="text" id="guest-address" class="form-control" placeholder="E.g., 55 Main St, near grocery store" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="guest-desc">Description of Waste / Urgency</label>
+                            <textarea id="guest-desc" class="form-control" rows="3" placeholder="E.g., Large heap of plastics dumped on sidewalk" required></textarea>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Waste Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- --- Logged In Dashboard Layout --- -->
+        <section id="dashboard-screen" class="screen">
+            <div class="dashboard-layout">
+                <!-- Sidebar navigation -->
+                <aside class="sidebar">
+                    <div class="profile-card">
+                        <div class="profile-avatar" id="nav-avatar">U</div>
+                        <div class="profile-info">
+                            <h4 id="nav-username">Name Here</h4>
+                            <p id="nav-role">Role</p>
+                        </div>
+                    </div>
+                    
+                    <nav>
+                        <ul class="nav-list" id="sidebar-nav-list">
+                            <!-- Populated dynamically via JS based on role -->
+                        </ul>
+                    </nav>
+
+                    <button class="btn btn-secondary btn-danger" onclick="logout()" style="width: 100%; margin-top: auto;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                    </button>
+                </aside>
+
+                <!-- Dashboard Content Area -->
+                <main class="screen-container">
+                    
+                    <!-- ====== REGISTERED USER SCREENS ====== -->
+                    <div id="user-schedule" class="panel role-panel user-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Waste Collection Schedule</h3>
+                            <span class="badge badge-info" id="user-area-badge">Area: North Zone</span>
+                        </div>
+                        <p style="color: var(--text-secondary);">Here is the monthly collection schedule for your neighborhood.</p>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Schedule ID</th>
+                                        <th>Date</th>
+                                        <th>Time Slot</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-schedule-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="user-request" class="panel role-panel user-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Request Waste Collection</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Request a waste collection outside the regular schedule if your bins are full.</p>
+                        <form id="user-request-form" onsubmit="submitUserRequest(event, 'USER_REQUEST')">
+                            <div class="form-group">
+                                <label for="req-address">Confirm Pickup Address</label>
+                                <input type="text" id="req-address" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="req-desc">Description of Waste (Organic, E-Waste, Recyclables, etc.)</label>
+                                <textarea id="req-desc" class="form-control" rows="3" required placeholder="Type and volume of waste..."></textarea>
+                            </div>
+                            <button type="submit" class="btn"><i class="fa-solid fa-truck-pickup"></i> Submit Request</button>
+                        </form>
+                    </div>
+
+                    <div id="user-dumping" class="panel role-panel user-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Report Excess Waste / Dumping</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">If you observe excessive waste accumulation or dumping on your premises, notify the cleanup team immediately.</p>
+                        <form id="user-dumping-form" onsubmit="submitUserRequest(event, 'DUMPING_REPORT')">
+                            <div class="form-group">
+                                <label for="dump-address">Dumping Location Address</label>
+                                <input type="text" id="dump-address" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dump-desc">Detailed Description of Situation</label>
+                                <textarea id="dump-desc" class="form-control" rows="3" required placeholder="Describe volume, hazard level..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-triangle-exclamation"></i> Report Dumping</button>
+                        </form>
+                    </div>
+
+                    <div id="user-payment" class="role-panel user-panel" style="display: none; gap: 20px;">
+                        <div class="eco-wallet-card">
+                            <div>
+                                <h4 style="color: #6ee7b7; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Reward Points Wallet</h4>
+                                <div class="wallet-amount" id="user-rewards-val">0.00 pts</div>
+                                <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 8px;">Earn 2% reward points automatically on every invoice paid!</p>
+                            </div>
+                            <button class="btn" onclick="openRedeemModal()" style="padding: 10px 20px; font-size: 0.85rem;">
+                                <i class="fa-solid fa-gift"></i> Redeem Points
+                            </button>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3 class="panel-title">Payments & Invoices</h3>
+                            </div>
+                            <div class="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Invoice ID</th>
+                                            <th>Date Paid</th>
+                                            <th>Amount</th>
+                                            <th>Points Earned</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-payments-list">
+                                        <!-- Dynamic -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn" onclick="openPaymentModal()"><i class="fa-solid fa-credit-card"></i> Pay Collection Fees</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- ====== WORKER PANEL ====== -->
+                    <div id="worker-schedule" class="panel role-panel worker-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Assigned Collection Tasks</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">View and complete collection tasks assigned to your zone.</p>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Task ID</th>
+                                        <th>Date</th>
+                                        <th>Time / Urgency</th>
+                                        <th>Area</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="worker-schedule-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="worker-expense" class="panel role-panel worker-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Expense Logging</h3>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Log New Expense</h4>
+                                <form id="worker-expense-form" onsubmit="submitWorkerExpense(event)">
+                                    <div class="form-group">
+                                        <label for="exp-amount">Amount ($)</label>
+                                        <input type="number" step="0.01" id="exp-amount" class="form-control" required placeholder="E.g., 45.50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exp-desc">Description</label>
+                                        <input type="text" id="exp-desc" class="form-control" required placeholder="E.g., Fuel for garbage truck #4">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exp-date">Date</label>
+                                        <input type="date" id="exp-date" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Submit Expense</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Historical Expense Claims</h4>
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Description</th>
+                                                <th>Amount</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="worker-expense-list">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="worker-leave" class="panel role-panel worker-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Apply for Leave</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Submit leave requests to the office administration.</p>
+                        <form id="worker-leave-form" onsubmit="submitWorkerLeave(event)">
+                            <div class="form-group">
+                                <label for="leave-start">Start Date</label>
+                                <input type="date" id="leave-start" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="leave-end">End Date</label>
+                                <input type="date" id="leave-end" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="leave-reason">Reason for Leave</label>
+                                <textarea id="leave-reason" class="form-control" rows="3" required placeholder="Reason..."></textarea>
+                            </div>
+                            <button type="submit" class="btn"><i class="fa-solid fa-plane-departure"></i> Submit Application</button>
+                        </form>
+                    </div>
+
+
+                    <!-- ====== OFFICE STAFF ====== -->
+                    <div id="staff-workers" class="panel role-panel staff-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Collection Staff Assignments</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Below are the workers automatically assigned by the backend. You can manually reassign their target collection area below.</p>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Worker ID</th>
+                                        <th>Name</th>
+                                        <th>Contact</th>
+                                        <th>Current Area</th>
+                                        <th>Manual Reassignment</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-workers-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="staff-schedules" class="panel role-panel staff-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Schedule Waste Collections</h3>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Create Schedule</h4>
+                                <form id="staff-schedule-form" onsubmit="createSchedule(event)">
+                                    <div class="form-group">
+                                        <label for="sched-area">Select Zone</label>
+                                        <select id="sched-area" class="form-control" onchange="updateSuggestedWorker()" required>
+                                            <option value="North Zone">North Zone</option>
+                                            <option value="South Zone">South Zone</option>
+                                            <option value="East Zone">East Zone</option>
+                                            <option value="West Zone">West Zone</option>
+                                            <option value="Central Zone">Central Zone</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sched-date">Collection Date</label>
+                                        <input type="date" id="sched-date" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sched-time">Collection Time</label>
+                                        <input type="time" id="sched-time" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sched-worker">Assign Worker</label>
+                                        <select id="sched-worker" class="form-control">
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                        <small style="color: var(--text-muted); margin-top: 4px;">Leave blank for backend auto-assignment based on the area.</small>
+                                    </div>
+                                    <button type="submit" class="btn"><i class="fa-solid fa-calendar-plus"></i> Dispatch Worker</button>
+                                </form>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 15px;">Active Schedules</h4>
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Area</th>
+                                                <th>Date/Time</th>
+                                                <th>Worker</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="staff-schedules-list">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="staff-expenses" class="panel role-panel staff-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Review Worker Expenses</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Review and approve expense reports submitted by collection workers.</p>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Worker</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-expense-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="staff-leaves" class="panel role-panel staff-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Worker Leave Requests</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Worker</th>
+                                        <th>Dates</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-leave-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="staff-requests" class="panel role-panel staff-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Requests & Dumping Reports</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Reporter</th>
+                                        <th>Area/Address</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Reported At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staff-requests-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                    <!-- ====== ADMIN PANEL ====== -->
+                    <div id="admin-staff" class="panel role-panel admin-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Register Office Staff</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Create credentials for administrative office staff.</p>
+                        <form id="admin-staff-form" onsubmit="adminRegisterStaff(event)">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="staff-id">Staff User ID</label>
+                                    <input type="text" id="staff-id" class="form-control" required placeholder="E.g., office_sarah">
+                                </div>
+                                <div class="form-group">
+                                    <label for="staff-pass">Staff Password</label>
+                                    <input type="password" id="staff-pass" class="form-control" required placeholder="Minimum 6 characters">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="staff-name">Full Name</label>
+                                <input type="text" id="staff-name" class="form-control" required placeholder="Sarah Connor">
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="staff-phone">Phone Number</label>
+                                    <input type="text" id="staff-phone" class="form-control" placeholder="E.g., 555-0100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="staff-email">Email Address</label>
+                                    <input type="email" id="staff-email" class="form-control" placeholder="sarah@ecobin.com">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn"><i class="fa-solid fa-user-plus"></i> Create Office Account</button>
+                        </form>
+                    </div>
+
+                    <div id="admin-payments" class="panel role-panel admin-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Financial Monitor</h3>
+                        </div>
+                        <div class="metrics-grid" style="margin-bottom: 10px;">
+                            <div class="metric-card">
+                                <div class="metric-title">Gross Revenue</div>
+                                <div class="metric-value" id="fin-revenue">$0.00</div>
+                                <div class="metric-desc">Total collection fees paid by users</div>
+                            </div>
+                            <div class="metric-card danger">
+                                <div class="metric-title">Operating Expenses</div>
+                                <div class="metric-value" id="fin-expenses">$0.00</div>
+                                <div class="metric-desc">Approved worker reimbursement claims</div>
+                            </div>
+                            <div class="metric-card info">
+                                <div class="metric-title">Net Balance</div>
+                                <div class="metric-value" id="fin-net">$0.00</div>
+                                <div class="metric-desc">Gross Revenue - Expenses</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div>
+                                <h4 style="margin-bottom: 12px; font-size: 1rem;">Payment Log</h4>
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Amount</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-payments-list">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 12px; font-size: 1rem;">Redeemed Reward Log</h4>
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Points Redeemed</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-rewards-list">
+                                            <!-- Dynamic (calculated based on points) -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="admin-reports" class="panel role-panel admin-panel" style="display: none;">
+                        <div class="panel-header">
+                            <h3 class="panel-title">Worker Activity & Waste Reports</h3>
+                        </div>
+                        <p style="color: var(--text-secondary);">Monitor logs submitted by collection staff upon waste pickup.</p>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Collector</th>
+                                        <th>Area</th>
+                                        <th>Waste Type</th>
+                                        <th>Weight (kg)</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-reports-list">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </section>
+    </div>
+
+    <!-- --- Modals --- -->
+
+    <!-- Simulated Payment Gateway -->
+    <div class="modal-overlay" id="payment-modal">
+        <div class="modal">
+            <h3 class="panel-title" style="text-align: center;"><i class="fa-solid fa-shield-halved" style="color: var(--accent-color)"></i> Secure Checkout</h3>
+            <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Simulated Gateway Payment</p>
+            
+            <div class="credit-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="card-chip"></div>
+                    <i class="fa-brands fa-cc-visa" style="font-size: 2rem; color: white;"></i>
+                </div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; letter-spacing: 0.1em; color: white;">
+                    ••••  ••••  ••••  4321
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+                    <span>ALICE GREEN</span>
+                    <span>EXP 12/29</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pay-amount-field">Invoice Amount ($)</label>
+                <input type="number" id="pay-amount-field" class="form-control" value="25.00">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="closePaymentModal()" style="flex: 1;">Cancel</button>
+                <button class="btn" onclick="submitPayment()" style="flex: 1;"><i class="fa-solid fa-credit-card"></i> Pay Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redeem Points Dialog -->
+    <div class="modal-overlay" id="redeem-modal">
+        <div class="modal">
+            <h3 class="panel-title"><i class="fa-solid fa-gift" style="color: var(--accent-color);"></i> Redeem Eco Vouchers</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Exchange accumulated points for local partner rewards.</p>
+            
+            <div class="form-group">
+                <label for="redeem-select">Select Voucher Option</label>
+                <select id="redeem-select" class="form-control" onchange="updateRedeemPointsVal()">
+                    <option value="10" data-points="10">10 Points = $5 Off Local Nursery</option>
+                    <option value="20" data-points="20">20 Points = Free Composting Starter Kit</option>
+                    <option value="50" data-points="50">50 Points = $25 Zero-Waste Supermarket Coupon</option>
+                </select>
+            </div>
+
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                Points Required: <strong id="redeem-points-req" style="color: var(--accent-color);">10 pts</strong>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="closeRedeemModal()" style="flex: 1;">Cancel</button>
+                <button class="btn" onclick="submitRedeemPoints()" style="flex: 1;">Claim Voucher</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Form Modal (For worker tasks) -->
+    <div class="modal-overlay" id="collect-modal">
+        <div class="modal">
+            <h3 class="panel-title"><i class="fa-solid fa-dumpster" style="color: var(--accent-color);"></i> Complete Collection Log</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Log waste collected to update schedules and generate office reports.</p>
+            
+            <input type="hidden" id="collect-task-id">
+            
+            <div class="form-group">
+                <label for="collect-waste-type">Waste Classification</label>
+                <select id="collect-waste-type" class="form-control" required>
+                    <option value="Organic">Organic / Food Waste</option>
+                    <option value="Plastic">Plastics & Bottles</option>
+                    <option value="Glass">Glass Containers</option>
+                    <option value="Paper">Paper & Cardboard</option>
+                    <option value="Metal">Metals & Cans</option>
+                    <option value="Mixed">Mixed / Garbage</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="collect-weight">Est. Weight (kg)</label>
+                <input type="number" step="0.1" id="collect-weight" class="form-control" value="12.5" required>
+            </div>
+
+            <div class="form-group">
+                <label for="collect-notes">Notes / Exceptions</label>
+                <input type="text" id="collect-notes" class="form-control" placeholder="E.g., Bins overloaded, sorted on site">
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="closeCollectModal()" style="flex: 1;">Cancel</button>
+                <button class="btn" onclick="submitCollectionLog()" style="flex: 1;">Log Collection</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        const API_URL = ''; // Same origin
+        let currentRole = 'GUEST';
+        let currentUser = null;
+        let allWorkersList = []; // Kept in memory for office schedules dropdown
+
+        // Initialize view
+        document.addEventListener('DOMContentLoaded', () => {
+            switchDemoRole('GUEST');
+        });
+
+        // Toast Notifier
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-times-circle';
+            if (type === 'info') icon = 'fa-info-circle';
+
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Demo Role Switcher (Facilitates testing 5 modules in 1 view)
+        function switchDemoRole(role) {
+            currentRole = role;
+            
+            // Remove active class from buttons
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toUpperCase().includes(role === 'USER' ? 'REGISTERED USER' : role)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // If guest user, bypass login dashboard and show report directly
+            if (role === 'GUEST') {
+                currentUser = null;
+                document.getElementById('dashboard-screen').classList.remove('active');
+                document.getElementById('dashboard-screen').style.display = 'none';
+                document.getElementById('auth-screen').classList.add('active');
+                document.getElementById('auth-screen').style.display = 'flex';
+                loadGuestForm();
+                return;
+            }
+
+            // For other roles, if they are not logged in for this role, show role-specific login
+            if (!currentUser || currentUser.role !== role) {
+                document.getElementById('dashboard-screen').classList.remove('active');
+                document.getElementById('dashboard-screen').style.display = 'none';
+                document.getElementById('auth-screen').classList.add('active');
+                document.getElementById('auth-screen').style.display = 'flex';
+                loadLoginForm(role);
+            } else {
+                // Already logged in as this role, load their dashboard
+                showDashboard();
+            }
+        }
+
+        // Generate Custom Login Form
+        function loadLoginForm(role) {
+            const container = document.getElementById('auth-form-container');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            
+            let labelRoleName = role.toLowerCase().replace('_', ' ');
+            title.textContent = `${role.charAt(0) + labelRoleName.slice(1)} Login`;
+            
+            if (role === 'ADMIN') {
+                subtitle.innerHTML = 'Enter admin ID to configure system staff and view reports. <br><small style="color:#f59e0b">Default: ID = admin / Password = admin123</small>';
+                container.innerHTML = `
+                    <form onsubmit="handleLogin(event, 'ADMIN')">
+                        <div class="form-group">
+                            <label for="login-id">Admin ID</label>
+                            <input type="text" id="login-id" class="form-control" required placeholder="admin">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-pass">Password</label>
+                            <input type="password" id="login-pass" class="form-control" required placeholder="admin123">
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+                    </form>
+                `;
+            } else {
+                subtitle.textContent = `Sign in to access your ${labelRoleName} dashboard panel.`;
+                let registerLink = '';
+                if (role === 'USER') {
+                    registerLink = `<p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                        Don't have an account? <a href="#" onclick="loadRegisterForm('USER')" style="color: var(--accent-color); font-weight:600;">Register Here</a>
+                    </p>`;
+                } else if (role === 'WORKER') {
+                    subtitle.innerHTML = `Sign in to view assignments. <br><small style="color:#f59e0b">Registered workers: ID = worker1 / Password = worker123</small>`;
+                    registerLink = `<p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                        New worker? <a href="#" onclick="loadRegisterForm('WORKER')" style="color: var(--accent-color); font-weight:600;">Register Worker Account</a>
+                    </p>`;
+                } else if (role === 'STAFF') {
+                    subtitle.innerHTML = `Sign in to manage schedules. <br><small style="color:#f59e0b">Registered staff: ID = staff1 / Password = staff123</small>`;
+                    registerLink = `<p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                        Staff Registration? <a href="#" onclick="loadRegisterForm('STAFF')" style="color: var(--accent-color); font-weight:600;">Create Account</a>
+                    </p>`;
+                }
+
+                container.innerHTML = `
+                    <form onsubmit="handleLogin(event, '${role}')">
+                        <div class="form-group">
+                            <label for="login-id">User ID</label>
+                            <input type="text" id="login-id" class="form-control" required placeholder="User ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-pass">Password</label>
+                            <input type="password" id="login-pass" class="form-control" required placeholder="Password">
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+                    </form>
+                    ${registerLink}
+                `;
+            }
+        }
+
+        // Generate Registration Form
+        function loadRegisterForm(role) {
+            const container = document.getElementById('auth-form-container');
+            const title = document.getElementById('auth-title');
+            
+            title.textContent = `Register: ${role.charAt(0) + role.slice(1).toLowerCase()}`;
+            
+            let optionalAreaField = '';
+            if (role === 'USER') {
+                optionalAreaField = `
+                    <div class="form-group">
+                        <label for="reg-area">Neighborhood Area</label>
+                        <select id="reg-area" class="form-control" required>
+                            <option value="North Zone">North Zone</option>
+                            <option value="South Zone">South Zone</option>
+                            <option value="East Zone">East Zone</option>
+                            <option value="West Zone">West Zone</option>
+                            <option value="Central Zone">Central Zone</option>
+                        </select>
+                    </div>
+                `;
+            } else if (role === 'WORKER') {
+                optionalAreaField = `
+                    <div style="background: rgba(16, 185, 129, 0.05); padding: 12px; border-radius: var(--radius-sm); border:1px solid rgba(16, 185, 129, 0.2); font-size:0.8rem; color: var(--text-secondary); margin-bottom: 15px;">
+                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> 
+                        <strong>Automatic Assignment:</strong> Upon registration, you will be automatically load-balanced into a neighborhood zone by the backend.
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <form onsubmit="handleRegister(event, '${role}')">
+                    <div class="form-group">
+                        <label for="reg-id">Create User ID</label>
+                        <input type="text" id="reg-id" class="form-control" required placeholder="Unique ID name">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-pass">Create Password</label>
+                        <input type="password" id="reg-pass" class="form-control" required placeholder="Minimum 6 characters">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-name">Full Name</label>
+                        <input type="text" id="reg-name" class="form-control" required placeholder="E.g., Alice Green">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-phone">Phone Number</label>
+                        <input type="text" id="reg-phone" class="form-control" required placeholder="E.g., 555-0123">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" class="form-control" required placeholder="E.g., alice@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-address">Complete Address</label>
+                        <input type="text" id="reg-address" class="form-control" required placeholder="E.g., 789 Pine Rd, North Zone">
+                    </div>
+                    ${optionalAreaField}
+                    <button type="submit" class="btn" style="width: 100%"><i class="fa-solid fa-user-plus"></i> Submit Registration</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Already registered? <a href="#" onclick="loadLoginForm('${role}')" style="color: var(--accent-color); font-weight:600;">Sign In</a>
+                </p>
+            `;
+        }
+
+        // Reset Guest Form
+        function loadGuestForm() {
+            const container = document.getElementById('auth-form-container');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            
+            title.textContent = "Guest Premises Report";
+            subtitle.textContent = "Submit details of waste seen in your neighborhood anonymously.";
+            
+            container.innerHTML = `
+                <form id="guest-report-form" onsubmit="submitGuestReport(event)">
+                    <div class="form-group">
+                        <label for="guest-reporter">Your Name (Optional)</label>
+                        <input type="text" id="guest-reporter" class="form-control" placeholder="Anonymous">
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-phone">Contact Phone (Optional)</label>
+                        <input type="text" id="guest-phone" class="form-control" placeholder="E.g., 555-0100">
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-area">Select Neighborhood Area</label>
+                        <select id="guest-area" class="form-control" required>
+                            <option value="North Zone">North Zone</option>
+                            <option value="South Zone">South Zone</option>
+                            <option value="East Zone">East Zone</option>
+                            <option value="West Zone">West Zone</option>
+                            <option value="Central Zone">Central Zone</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-address">Exact Location/Address</label>
+                        <input type="text" id="guest-address" class="form-control" placeholder="E.g., 55 Main St, near grocery store" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-desc">Description of Waste / Urgency</label>
+                        <textarea id="guest-desc" class="form-control" rows="3" placeholder="E.g., Large heap of plastics dumped on sidewalk" required></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Waste Report
+                    </button>
+                </form>
+            `;
+        }
+
+        // POST Register API
+        async function handleRegister(event, role) {
+            event.preventDefault();
+            const userId = document.getElementById('reg-id').value;
+            const password = document.getElementById('reg-pass').value;
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const email = document.getElementById('reg-email').value;
+            const address = document.getElementById('reg-address').value;
+            const areaSelect = document.getElementById('reg-area');
+            const area = areaSelect ? areaSelect.value : '';
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, password, name, phone, email, address, role, area })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showToast('Account registered successfully! You can now log in.');
+                    loadLoginForm(role);
+                } else {
+                    showToast(data.error || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showToast('Unable to connect to server', 'error');
+            }
+        }
+
+        // POST Login API
+        async function handleLogin(event, role) {
+            event.preventDefault();
+            const userId = document.getElementById('login-id').value;
+            const password = document.getElementById('login-pass').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    currentUser = data; // Save session data (token, role, name, area)
+                    showToast(`Welcome back, ${data.name}!`);
+                    showDashboard();
+                } else {
+                    showToast(data.error || 'Authentication failed', 'error');
+                }
+            } catch (err) {
+                showToast('Unable to connect to server', 'error');
+            }
+        }
+
+        // Log Out
+        function logout() {
+            currentUser = null;
+            switchDemoRole('GUEST');
+            showToast('Logged out successfully', 'info');
+        }
+
+        // Show Main Dashboard and build Sidebar Navigation
+        function showDashboard() {
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('auth-screen').style.display = 'none';
+            
+            document.getElementById('dashboard-screen').classList.add('active');
+            document.getElementById('dashboard-screen').style.display = 'flex';
+
+            // Top Profile Section
+            document.getElementById('nav-avatar').textContent = currentUser.name.charAt(0);
+            document.getElementById('nav-username').textContent = currentUser.name;
+            document.getElementById('nav-role').textContent = currentUser.role;
+
+            const navList = document.getElementById('sidebar-nav-list');
+            navList.innerHTML = ''; // Clear
+
+            // Setup Panels and Sidebar based on Role
+            document.querySelectorAll('.role-panel').forEach(panel => panel.style.display = 'none');
+
+            if (currentUser.role === 'USER') {
+                document.getElementById('user-area-badge').textContent = `Area: ${currentUser.area || 'Unknown'}`;
+                document.getElementById('req-address').value = currentUser.address || '';
+                document.getElementById('dump-address').value = currentUser.address || '';
+
+                navList.innerHTML = `
+                    <li><button class="nav-item-btn active" onclick="showPanel('user-schedule', this)"><i class="fa-solid fa-calendar-days"></i> Schedules</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('user-request', this)"><i class="fa-solid fa-truck-pickup"></i> Request Pickup</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('user-dumping', this)"><i class="fa-solid fa-triangle-exclamation"></i> Report Dumping</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('user-payment', this)"><i class="fa-solid fa-wallet"></i> Payments & Rewards</button></li>
+                `;
+                showPanel('user-schedule');
+                loadUserSchedules();
+                loadUserPayments();
+                updateUserWallet();
+            } 
+            else if (currentUser.role === 'WORKER') {
+                navList.innerHTML = `
+                    <li><button class="nav-item-btn active" onclick="showPanel('worker-schedule', this)"><i class="fa-solid fa-clipboard-list"></i> Assigned Tasks</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('worker-expense', this)"><i class="fa-solid fa-file-invoice-dollar"></i> Expenses</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('worker-leave', this)"><i class="fa-solid fa-calendar-minus"></i> Apply Leave</button></li>
+                `;
+                showPanel('worker-schedule');
+                loadWorkerTasks();
+                loadWorkerExpenses();
+            } 
+            else if (currentUser.role === 'STAFF') {
+                navList.innerHTML = `
+                    <li><button class="nav-item-btn active" onclick="showPanel('staff-workers', this)"><i class="fa-solid fa-users-gear"></i> Workers Area</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('staff-schedules', this)"><i class="fa-solid fa-calendar-check"></i> Manage Schedules</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('staff-expenses', this)"><i class="fa-solid fa-receipt"></i> Review Expenses</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('staff-leaves', this)"><i class="fa-solid fa-plane-departure"></i> Leave Requests</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('staff-requests', this)"><i class="fa-solid fa-flag"></i> Dump/Guest Reports</button></li>
+                `;
+                showPanel('staff-workers');
+                loadStaffWorkers();
+                loadStaffSchedules();
+                loadStaffExpenses();
+                loadStaffLeaves();
+                loadStaffRequests();
+            } 
+            else if (currentUser.role === 'ADMIN') {
+                navList.innerHTML = `
+                    <li><button class="nav-item-btn active" onclick="showPanel('admin-staff', this)"><i class="fa-solid fa-user-shield"></i> Add Office Staff</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('admin-payments', this)"><i class="fa-solid fa-chart-line"></i> Financial Monitor</button></li>
+                    <li><button class="nav-item-btn" onclick="showPanel('admin-reports', this)"><i class="fa-solid fa-file-medical"></i> Activity Reports</button></li>
+                `;
+                showPanel('admin-staff');
+                loadAdminFinance();
+                loadAdminReports();
+            }
+        }
+
+        // Toggle Sidebar Nav State
+        function showPanel(panelId, btn = null) {
+            document.querySelectorAll('.role-panel').forEach(panel => panel.style.display = 'none');
+            
+            const selected = document.getElementById(panelId);
+            if (selected) {
+                if (selected.classList.contains('grid-2') || panelId === 'user-payment') {
+                    selected.style.display = 'flex';
+                } else {
+                    selected.style.display = 'block';
+                }
+            }
+
+            if (btn) {
+                document.querySelectorAll('.nav-item-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        }
+
+        // Fetch wrapper adding Bearer Token to header
+        async function apiFetch(endpoint, options = {}) {
+            if (!options.headers) options.headers = {};
+            if (currentUser && currentUser.token) {
+                options.headers['Authorization'] = `Bearer ${currentUser.token}`;
+            }
+            if (options.body && typeof options.body === 'object') {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(options.body);
+            }
+            return fetch(`${API_URL}${endpoint}`, options);
+        }
+
+        // --- Role Features: Guest User ---
+        async function submitGuestReport(event) {
+            event.preventDefault();
+            const reporterName = document.getElementById('guest-reporter').value;
+            const phone = document.getElementById('guest-phone').value;
+            const area = document.getElementById('guest-area').value;
+            const address = document.getElementById('guest-address').value;
+            const description = document.getElementById('guest-desc').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/requests`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'GUEST_REPORT', reporterName, phone, area, address, description })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showToast(data.message || 'Report submitted anonymously to office staff!');
+                    document.getElementById('guest-report-form').reset();
+                } else {
+                    showToast(data.error || 'Failed to submit report', 'error');
+                }
+            } catch (err) {
+                showToast('Failed to connect to server', 'error');
+            }
+        }
+
+        // --- Role Features: Registered User ---
+        async function loadUserSchedules() {
+            try {
+                const res = await apiFetch('/api/schedules');
+                const data = await res.json();
+                const tbody = document.getElementById('user-schedule-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-secondary)">No collections scheduled for your area this month.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(s => {
+                    const badgeClass = s.status === 'Collected' ? 'badge-success' : 'badge-warning';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.id}</td>
+                            <td>${s.date}</td>
+                            <td>${s.time}</td>
+                            <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading schedules', 'error');
+            }
+        }
+
+        async function submitUserRequest(event, type) {
+            event.preventDefault();
+            const address = type === 'USER_REQUEST' ? document.getElementById('req-address').value : document.getElementById('dump-address').value;
+            const description = type === 'USER_REQUEST' ? document.getElementById('req-desc').value : document.getElementById('dump-desc').value;
+            
+            try {
+                const res = await apiFetch('/api/requests', {
+                    method: 'POST',
+                    body: { type, address, area: currentUser.area, description }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Waste collection request logged and auto-assigned.');
+                    if (type === 'USER_REQUEST') document.getElementById('user-request-form').reset();
+                    else document.getElementById('user-dumping-form').reset();
+                } else {
+                    showToast(data.error || 'Submission failed', 'error');
+                }
+            } catch (e) {
+                showToast('Failed to submit request', 'error');
+            }
+        }
+
+        async function loadUserPayments() {
+            try {
+                const res = await apiFetch('/api/payments');
+                const data = await res.json();
+                const tbody = document.getElementById('user-payments-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-secondary)">No invoices generated. Click Pay Collection Fees below to test.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p.id}</td>
+                            <td>${p.date}</td>
+                            <td>$${Number(p.amount).toFixed(2)}</td>
+                            <td style="color:var(--accent-color)">+${Number(p.rewardAdded).toFixed(2)} pts</td>
+                            <td><span class="badge badge-success">${p.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading payment history', 'error');
+            }
+        }
+
+        function updateUserWallet() {
+            // Retrieve latest reward points from the database
+            apiFetch('/api/auth/login', {
+                method: 'POST',
+                body: { userId: currentUser.userId, password: '' } // Password dummy triggers safe retrieval
+            }).then(r => r.json()).then(data => {
+                if (data.rewardPoints !== undefined) {
+                    currentUser.rewardPoints = data.rewardPoints;
+                    document.getElementById('user-rewards-val').textContent = `${Number(currentUser.rewardPoints).toFixed(2)} pts`;
+                }
+            }).catch(() => {
+                document.getElementById('user-rewards-val').textContent = `${Number(currentUser.rewardPoints || 0).toFixed(2)} pts`;
+            });
+        }
+
+        function openPaymentModal() {
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        async function submitPayment() {
+            const amount = parseFloat(document.getElementById('pay-amount-field').value);
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+
+            try {
+                const res = await apiFetch('/api/payments', {
+                    method: 'POST',
+                    body: { amount }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Payment successfully processed! Points awarded.');
+                    closePaymentModal();
+                    loadUserPayments();
+                    updateUserWallet();
+                } else {
+                    showToast(data.error || 'Payment declined', 'error');
+                }
+            } catch (e) {
+                showToast('Gateway connection error', 'error');
+            }
+        }
+
+        function openRedeemModal() {
+            document.getElementById('redeem-modal').style.display = 'flex';
+            updateRedeemPointsVal();
+        }
+
+        function closeRedeemModal() {
+            document.getElementById('redeem-modal').style.display = 'none';
+        }
+
+        function updateRedeemPointsVal() {
+            const sel = document.getElementById('redeem-select');
+            const pts = sel.options[sel.selectedIndex].dataset.points;
+            document.getElementById('redeem-points-req').textContent = `${pts} pts`;
+        }
+
+        async function submitRedeemPoints() {
+            const sel = document.getElementById('redeem-select');
+            const points = parseFloat(sel.options[sel.selectedIndex].dataset.points);
+
+            try {
+                const res = await apiFetch('/api/payments/redeem', {
+                    method: 'POST',
+                    body: { points }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Redemption claim approved! Check email for voucher.');
+                    closeRedeemModal();
+                    updateUserWallet();
+                } else {
+                    showToast(data.error || 'Insufficient points', 'error');
+                }
+            } catch (e) {
+                showToast('Redemption failed', 'error');
+            }
+        }
+
+        // --- Role Features: Collection Worker ---
+        async function loadWorkerTasks() {
+            try {
+                const res = await apiFetch('/api/schedules');
+                const data = await res.json();
+                const tbody = document.getElementById('worker-schedule-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary)">No collections assigned in your zone.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(t => {
+                    const isPending = t.status === 'Pending';
+                    const badgeClass = isPending ? 'badge-warning' : 'badge-success';
+                    const actionBtn = isPending ? 
+                        `<button class="btn" onclick="openCollectModal('${t.id}')" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-square-check"></i> Collect</button>` : 
+                        `<span style="color: var(--text-muted); font-size:0.8rem;">Completed</span>`;
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${t.id}</td>
+                            <td>${t.date}</td>
+                            <td>${t.time}</td>
+                            <td>${t.area}</td>
+                            <td><span class="badge ${badgeClass}">${t.status}</span></td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading tasks', 'error');
+            }
+        }
+
+        function openCollectModal(id) {
+            document.getElementById('collect-task-id').value = id;
+            document.getElementById('collect-modal').style.display = 'flex';
+        }
+
+        function closeCollectModal() {
+            document.getElementById('collect-modal').style.display = 'none';
+        }
+
+        async function submitCollectionLog() {
+            const scheduleId = document.getElementById('collect-task-id').value;
+            const wasteType = document.getElementById('collect-waste-type').value;
+            const weight = parseFloat(document.getElementById('collect-weight').value);
+            const notes = document.getElementById('collect-notes').value;
+
+            try {
+                const res = await apiFetch('/api/reports', {
+                    method: 'POST',
+                    body: { scheduleId, wasteType, weight, notes }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Collection reported successfully!');
+                    closeCollectModal();
+                    loadWorkerTasks();
+                } else {
+                    showToast(data.error || 'Failed to submit report', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function loadWorkerExpenses() {
+            try {
+                const res = await apiFetch('/api/workers/expense');
+                const data = await res.json();
+                const tbody = document.getElementById('worker-expense-list');
+                tbody.innerHTML = '';
+
+                // Filter only current worker expenses
+                const myExps = data.filter(e => e.workerId === currentUser.userId);
+
+                if (myExps.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-secondary)">No expense claims.</td></tr>`;
+                    return;
+                }
+
+                myExps.forEach(e => {
+                    let badgeClass = 'badge-warning';
+                    if (e.status === 'Approved') badgeClass = 'badge-success';
+                    if (e.status === 'Declined') badgeClass = 'badge-danger';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${e.description}</td>
+                            <td>$${Number(e.amount).toFixed(2)}</td>
+                            <td>${e.date}</td>
+                            <td><span class="badge ${badgeClass}">${e.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading expenses', 'error');
+            }
+        }
+
+        async function submitWorkerExpense(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('exp-amount').value);
+            const description = document.getElementById('exp-desc').value;
+            const date = document.getElementById('exp-date').value;
+
+            try {
+                const res = await apiFetch('/api/workers/expense', {
+                    method: 'POST',
+                    body: { amount, description, date }
+                });
+                if (res.ok) {
+                    showToast('Expense report submitted to administration.');
+                    document.getElementById('worker-expense-form').reset();
+                    loadWorkerExpenses();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to log expense', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function submitWorkerLeave(event) {
+            event.preventDefault();
+            const startDate = document.getElementById('leave-start').value;
+            const endDate = document.getElementById('leave-end').value;
+            const reason = document.getElementById('leave-reason').value;
+
+            try {
+                const res = await apiFetch('/api/workers/leave', {
+                    method: 'POST',
+                    body: { startDate, endDate, reason }
+                });
+                if (res.ok) {
+                    showToast('Leave request submitted to administration.');
+                    document.getElementById('worker-leave-form').reset();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to apply', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        // --- Role Features: Office Staff ---
+        async function loadStaffWorkers() {
+            try {
+                const res = await apiFetch('/api/workers');
+                const data = await res.json();
+                allWorkersList = data; // Cache
+                const tbody = document.getElementById('staff-workers-list');
+                tbody.innerHTML = '';
+
+                data.forEach(w => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${w.userId}</strong></td>
+                            <td>${w.name}</td>
+                            <td>${w.phone}<br><small>${w.email}</small></td>
+                            <td><span class="badge badge-info"><i class="fa-solid fa-map-pin"></i> ${w.area}</span></td>
+                            <td>
+                                <select class="form-control" style="padding:6px 12px; font-size:0.85rem;" onchange="reassignWorkerArea('${w.userId}', this.value)">
+                                    <option value="North Zone" ${w.area === 'North Zone' ? 'selected' : ''}>North Zone</option>
+                                    <option value="South Zone" ${w.area === 'South Zone' ? 'selected' : ''}>South Zone</option>
+                                    <option value="East Zone" ${w.area === 'East Zone' ? 'selected' : ''}>East Zone</option>
+                                    <option value="West Zone" ${w.area === 'West Zone' ? 'selected' : ''}>West Zone</option>
+                                    <option value="Central Zone" ${w.area === 'Central Zone' ? 'selected' : ''}>Central Zone</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Update staff schedule form worker select option
+                const wSelect = document.getElementById('sched-worker');
+                wSelect.innerHTML = '<option value="">-- Auto-Assign by Backend --</option>';
+                data.forEach(w => {
+                    wSelect.innerHTML += `<option value="${w.userId}">${w.name} (${w.area})</option>`;
+                });
+            } catch (e) {
+                showToast('Error loading workers mapping', 'error');
+            }
+        }
+
+        async function reassignWorkerArea(workerId, area) {
+            try {
+                const res = await apiFetch('/api/workers/assign', {
+                    method: 'POST',
+                    body: { workerId, area }
+                });
+                if (res.ok) {
+                    showToast(`Successfully reassigned ${workerId} to ${area}.`);
+                    loadStaffWorkers();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Failed to reassign', 'error');
+                }
+            } catch (e) {
+                showToast('Reassignment error', 'error');
+            }
+        }
+
+        function updateSuggestedWorker() {
+            // Helper to pre-select worker in create schedule form matching selected area
+            const area = document.getElementById('sched-area').value;
+            const wSelect = document.getElementById('sched-worker');
+            const match = allWorkersList.find(w => w.area === area);
+            if (match) {
+                wSelect.value = match.userId;
+            } else {
+                wSelect.value = "";
+            }
+        }
+
+        async function createSchedule(event) {
+            event.preventDefault();
+            const area = document.getElementById('sched-area').value;
+            const date = document.getElementById('sched-date').value;
+            const time = document.getElementById('sched-time').value;
+            const workerId = document.getElementById('sched-worker').value;
+
+            try {
+                const res = await apiFetch('/api/schedules', {
+                    method: 'POST',
+                    body: { area, date, time, workerId }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Waste collection schedule created.');
+                    document.getElementById('staff-schedule-form').reset();
+                    loadStaffSchedules();
+                } else {
+                    showToast(data.error || 'Failed to create schedule', 'error');
+                }
+            } catch (e) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function loadStaffSchedules() {
+            try {
+                const res = await apiFetch('/api/schedules');
+                const data = await res.json();
+                const tbody = document.getElementById('staff-schedules-list');
+                tbody.innerHTML = '';
+
+                data.forEach(s => {
+                    const badgeClass = s.status === 'Collected' ? 'badge-success' : 'badge-warning';
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${s.area}</strong></td>
+                            <td>${s.date}<br><small>${s.time}</small></td>
+                            <td>${s.workerId}</td>
+                            <td><span class="badge ${badgeClass}">${s.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading schedules', 'error');
+            }
+        }
+
+        async function loadStaffExpenses() {
+            try {
+                const res = await apiFetch('/api/workers/expense');
+                const data = await res.json();
+                const tbody = document.getElementById('staff-expense-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary)">No expense claims submitted yet.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(e => {
+                    let actionsHtml = `<span style="color:var(--text-muted); font-size:0.85rem;">Reviewed</span>`;
+                    let badgeClass = 'badge-warning';
+                    if (e.status === 'Pending') {
+                        actionsHtml = `
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn" style="padding:6px 12px; font-size:0.75rem;" onclick="actionExpense('${e.id}', 'Accept')">Accept</button>
+                                <button class="btn btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="actionExpense('${e.id}', 'Decline')">Decline</button>
+                            </div>
+                        `;
+                    } else if (e.status === 'Approved') {
+                        badgeClass = 'badge-success';
+                    } else if (e.status === 'Declined') {
+                        badgeClass = 'badge-danger';
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${e.workerName}</strong><br><small>${e.workerId}</small></td>
+                            <td>${e.description}</td>
+                            <td>$${Number(e.amount).toFixed(2)}</td>
+                            <td>${e.date}</td>
+                            <td><span class="badge ${badgeClass}">${e.status}</span></td>
+                            <td>${actionsHtml}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading worker expenses', 'error');
+            }
+        }
+
+        async function actionExpense(id, action) {
+            try {
+                const res = await apiFetch('/api/workers/expense/action', {
+                    method: 'POST',
+                    body: { id, action }
+                });
+                if (res.ok) {
+                    showToast(`Expense ${action === 'Accept' ? 'approved' : 'declined'} successfully.`);
+                    loadStaffExpenses();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Action failed', 'error');
+                }
+            } catch (e) {
+                showToast('Expense action error', 'error');
+            }
+        }
+
+        async function loadStaffLeaves() {
+            try {
+                const res = await apiFetch('/api/workers/leave');
+                const data = await res.json();
+                const tbody = document.getElementById('staff-leave-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-secondary)">No leaves requested yet.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(l => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${l.workerName}</strong><br><small>${l.workerId}</small></td>
+                            <td>${l.startDate} to ${l.endDate}</td>
+                            <td>${l.reason}</td>
+                            <td><span class="badge badge-warning">${l.status}</span></td>
+                            <td>
+                                <span style="font-size:0.8rem; color:var(--text-muted)">Info: Standard Leave</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading leave requests', 'error');
+            }
+        }
+
+        async function loadStaffRequests() {
+            try {
+                const res = await apiFetch('/api/requests');
+                const data = await res.json();
+                const tbody = document.getElementById('staff-requests-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary)">No reports logged in system.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(r => {
+                    let typeBadgeClass = 'badge-info';
+                    if (r.type === 'DUMPING_REPORT') typeBadgeClass = 'badge-danger';
+                    if (r.type === 'GUEST_REPORT') typeBadgeClass = 'badge-warning';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="badge ${typeBadgeClass}">${r.type}</span></td>
+                            <td><strong>${r.reporterName}</strong><br><small>${r.phone || 'No Contact'}</small></td>
+                            <td><strong>${r.area}</strong><br><small>${r.address}</small></td>
+                            <td>${r.description}</td>
+                            <td><span class="badge ${r.status === 'Collected' ? 'badge-success' : 'badge-warning'}">${r.status}</span></td>
+                            <td><small>${r.createdAt}</small></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading requests log', 'error');
+            }
+        }
+
+        // --- Role Features: Admin ---
+        async function adminRegisterStaff(event) {
+            event.preventDefault();
+            const userId = document.getElementById('staff-id').value;
+            const password = document.getElementById('staff-pass').value;
+            const name = document.getElementById('staff-name').value;
+            const phone = document.getElementById('staff-phone').value;
+            const email = document.getElementById('staff-email').value;
+            const address = '';
+
+            try {
+                const res = await apiFetch('/api/admin/register-staff', {
+                    method: 'POST',
+                    body: { userId, password, name, phone, email, address }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Office staff registered successfully!');
+                    document.getElementById('admin-staff-form').reset();
+                } else {
+                    showToast(data.error || 'Failed to register office staff', 'error');
+                }
+            } catch (e) {
+                showToast('Registration connection error', 'error');
+            }
+        }
+
+        async function loadAdminFinance() {
+            try {
+                // Get payments
+                const payRes = await apiFetch('/api/payments');
+                const payments = await payRes.json();
+
+                // Get expenses
+                const expRes = await apiFetch('/api/workers/expense');
+                const expenses = await expRes.json();
+
+                // Calculate Revenue
+                const rev = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+                
+                // Calculate Approved Expenses
+                const approvedExpenses = expenses.filter(e => e.status === 'Approved');
+                const exp = approvedExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+
+                const net = rev - exp;
+
+                document.getElementById('fin-revenue').textContent = `$${rev.toFixed(2)}`;
+                document.getElementById('fin-expenses').textContent = `$${exp.toFixed(2)}`;
+                document.getElementById('fin-net').textContent = `$${net.toFixed(2)}`;
+                document.getElementById('fin-net').style.color = net >= 0 ? '#34d399' : '#f87171';
+
+                // Fill lists
+                const payTable = document.getElementById('admin-payments-list');
+                payTable.innerHTML = '';
+                if (payments.length === 0) {
+                    payTable.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-secondary)">No payments logged.</td></tr>`;
+                } else {
+                    payments.forEach(p => {
+                        payTable.innerHTML += `
+                            <tr>
+                                <td><strong>${p.userId}</strong></td>
+                                <td style="color:#34d399">+$${Number(p.amount).toFixed(2)}</td>
+                                <td><small>${p.date.split(' ')[0]}</small></td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Fill rewards/redemption log (each payment awards 2% rewards points; user can redeem points)
+                // Let's list total rewards generated per user
+                const rewardsTable = document.getElementById('admin-rewards-list');
+                rewardsTable.innerHTML = '';
+                
+                // Fetch users to show their current outstanding points balances
+                const usersRes = await apiFetch('/api/workers'); // We can fetch workers or let staff fetch, but we can reuse users from db if endpoint supports it.
+                // To keep it simple, we show total reward points earned across the system
+                let rewardsLogged = false;
+                payments.forEach(p => {
+                    if (p.rewardAdded > 0) {
+                        rewardsLogged = true;
+                        rewardsTable.innerHTML += `
+                            <tr>
+                                <td><strong>${p.userId}</strong></td>
+                                <td style="color:#60a5fa">${Number(p.rewardAdded).toFixed(2)} pts</td>
+                                <td><span class="badge badge-success">Earned</span></td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                if (!rewardsLogged) {
+                    rewardsTable.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-secondary)">No rewards logged.</td></tr>`;
+                }
+
+            } catch (e) {
+                showToast('Error loading financial monitor', 'error');
+            }
+        }
+
+        async function loadAdminReports() {
+            try {
+                const res = await apiFetch('/api/reports');
+                const data = await res.json();
+                const tbody = document.getElementById('admin-reports-list');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary)">No waste logs submitted by collectors yet.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(r => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><small>${r.date}</small></td>
+                            <td><strong>${r.workerName}</strong><br><small>${r.workerId}</small></td>
+                            <td><span class="badge badge-info">${r.area}</span></td>
+                            <td>${r.wasteType}</td>
+                            <td><strong>${r.weight} kg</strong></td>
+                            <td><small>${r.notes || 'None'}</small></td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                showToast('Error loading reports', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

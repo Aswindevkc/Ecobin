@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECO BIN - Administrative & Operational Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+                            500: '#10b981', 600: '#16a34a', 700: '#15803d', 950: '#022c22'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+    </style>
+</head>
+
+<body
+    class="h-full font-sans antialiased text-slate-700 bg-slate-50 dark:bg-slate-950 dark:text-slate-300 selection:bg-emerald-100 dark:selection:bg-emerald-950 transition-colors duration-300 relative flex flex-col justify-between"
+    x-data="loginPortal()" x-init="initTheme()" x-cloak>
+
+    <div
+        class="absolute top-0 right-0 -z-10 pointer-events-none w-96 h-96 bg-emerald-50/50 dark:bg-emerald-950/10 rounded-full blur-3xl">
+    </div>
+    <div
+        class="absolute bottom-0 left-0 -z-10 pointer-events-none w-96 h-96 bg-emerald-50/30 dark:bg-emerald-950/20 rounded-full blur-3xl">
+    </div>
+
+    <div x-show="toast" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-2 sm:translate-y-0 sm:translate-x-2"
+        x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white dark:bg-emerald-950 dark:border dark:border-emerald-855 px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold tracking-wide"
+        style="display: none;">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span x-text="toast"></span>
+    </div>
+
+    <header
+        class="py-6 px-6 md:px-12 flex items-center justify-between border-b border-emerald-50 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+        <div class="flex items-center gap-2.5">
+            <div
+                class="h-8 w-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold text-xs tracking-tighter">
+                EB
+            </div>
+            <div>
+                <h1 class="text-xs uppercase tracking-widest font-black text-emerald-900 dark:text-emerald-400">Eco Bin
+                </h1>
+                <p class="text-[9px] text-emerald-600 dark:text-emerald-500 font-bold uppercase tracking-wider">Control
+                    WebPortal</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button @click="toggleTheme()"
+                class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400"
+                aria-label="Toggle dark mode">
+                <svg x-show="!darkMode" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m2.828 5.657a5 5 0 1110 0 5 5 0 01-10 0z" />
+                </svg>
+                <svg x-show="darkMode" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+
+            <div
+                class="flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 rounded-full text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                    :class="user ? 'animate-ping' : 'animate-pulse'"></span>
+                <span x-text="user ? 'Session Active' : 'App Sync Connected'"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex items-center justify-center py-12 px-6">
+
+        <template x-if="!user">
+            <div
+                class="w-full max-w-md bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 p-8 rounded-3xl shadow-sm space-y-6">
+                <div class="space-y-4 text-center">
+                    <div
+                        class="mx-auto h-12 w-12 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl flex items-center justify-center text-emerald-500 border border-emerald-100 dark:border-slate-800">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1-10 10m0-20A10 10 0 0 0 2 12a10 10 0 0 0 10 10m0-20v20"
+                                stroke-linecap="round" />
+                            <path d="M12 12c2-3 5-4 5-4s-1 4-4 5c-3 1-5 2-5 2s1-3 4-3z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold tracking-tight text-emerald-950 dark:text-white">ECO BIN
+                            Control Portal</h2>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-500">Security
+                        Access Portal</label>
+                    <div
+                        class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/40 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                        <button type="button" @click="credentials.passkey = 'adm_pass'"
+                            :class="credentials.passkey === 'adm_pass' ? 'bg-emerald-600 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'"
+                            class="py-2 px-3 rounded-xl text-[10px] transition-all duration-150 uppercase tracking-widest font-extrabold">
+                            Admin
+                        </button>
+                        <button type="button" @click="credentials.passkey = 'office_pass'"
+                            :class="credentials.passkey === 'office_pass' ? 'bg-emerald-600 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900'"
+                            class="py-2 px-3 rounded-xl text-[10px] transition-all duration-150 uppercase tracking-widest font-extrabold">
+                            Office Staff
+                        </button>
+                    </div>
+                </div>
+
+                <form @submit.prevent="submitLogin()" class="space-y-5">
+                    <template x-if="errorMessage">
+                        <div
+                            class="bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 p-3.5 rounded-xl text-xs font-semibold border border-rose-100 dark:border-rose-900/50 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                            <span x-text="errorMessage"></span>
+                        </div>
+                    </template>
+
+                    <div class="space-y-1">
+                        <label
+                            class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-500">User
+                            Security ID</label>
+                        <input type="text" required x-model="credentials.id"
+                            class="w-full bg-slate-50/50 dark:bg-slate-800/40 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-emerald-400 rounded-xl px-4 py-3 text-sm focus:outline-none transition-all placeholder:text-slate-400 text-slate-900 dark:text-slate-100"
+                            placeholder="Enter your system identifier">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label
+                            class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-500">Password</label>
+                        <input type="password" required x-model="credentials.password"
+                            class="w-full bg-slate-50/50 dark:bg-slate-800/40 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-emerald-400 rounded-xl px-4 py-3 text-sm focus:outline-none transition-all placeholder:text-slate-400 text-slate-900 dark:text-slate-100"
+                            placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" :disabled="loading"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3.5 rounded-xl transition duration-150 tracking-wider uppercase flex items-center justify-center gap-2 shadow-sm">
+                        <span x-text="loading ? 'Authenticating...' : 'Authenticate Portal'"></span>
+                    </button>
+                </form>
+
+                <div class="pt-6 border-t border-emerald-100 dark:border-slate-800 text-center space-y-3">
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-500">
+                        Automatic Role Detection Simulators</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button @click="autoFill('admin')"
+                            class="border border-emerald-100/50 dark:border-slate-800 hover:border-emerald-200 bg-emerald-50/10 hover:bg-emerald-50/40 p-3 rounded-xl text-left transition group">
+                            <span
+                                class="text-[10px] font-bold text-emerald-900 dark:text-slate-200 group-hover:text-emerald-700 block">Admin
+                                Role</span>
+                            <span class="text-[9px] text-slate-400 font-mono block mt-0.5">ID: admin / admin123</span>
+                        </button>
+                        <button @click="autoFill('staff')"
+                            class="border border-emerald-100/50 dark:border-slate-800 hover:border-emerald-200 bg-emerald-50/10 hover:bg-emerald-50/40 p-3 rounded-xl text-left transition group">
+                            <span
+                                class="text-[10px] font-bold text-emerald-900 dark:text-slate-200 group-hover:text-emerald-700 block">Office
+                                Staff</span>
+                            <span class="text-[9px] text-slate-400 font-mono block mt-0.5">ID: staff01 / staff123</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template x-if="user">
+            <div
+                class="w-full max-w-6xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 p-8 rounded-3xl shadow-sm space-y-8 animate-fadeIn">
+
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-100 dark:border-slate-800 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
+                                :class="user.role === 'ADMIN' ? 'bg-amber-50 dark:bg-amber-950/45 text-amber-950 dark:text-amber-400 border border-amber-100 dark:border-amber-900' : 'bg-emerald-50 dark:bg-emerald-950/45 text-emerald-950 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900'"
+                                x-text="user.role + ' Session'"></span>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-emerald-950 dark:text-white mt-1" x-text="user.name">
+                        </h2>
+                    </div>
+
+                    <button @click="logout()"
+                        class="text-xs font-bold text-emerald-900 dark:text-emerald-400 hover:text-rose-600 transition bg-emerald-50 dark:bg-slate-800 px-4 py-2 rounded-xl border border-emerald-100 dark:border-slate-700 self-start sm:self-center">Sign
+                        Out</button>
+                </div>
+
+                <template x-if="user.role === 'ADMIN'">
+                    <div class="space-y-8" x-data="adminDashboard()">
+
+                        <div class="flex border-b border-slate-100 dark:border-slate-800 gap-6 overflow-x-auto pb-px">
+                            <button @click="currentSubTab = 'staff'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2"
+                                :class="currentSubTab === 'staff' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Staff Directory
+                            </button>
+                            <button @click="currentSubTab = 'collection'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2"
+                                :class="currentSubTab === 'collection' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Collection Summaries
+                            </button>
+                            <button @click="currentSubTab = 'rewards'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2"
+                                :class="currentSubTab === 'rewards' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Reward Reports
+                            </button>
+                            <button @click="currentSubTab = 'complaints'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2"
+                                :class="currentSubTab === 'complaints' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Complaint Reports
+                            </button>
+                        </div>
+
+                        <div x-show="currentSubTab === 'staff'" class="space-y-6 animate-fadeIn">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h3
+                                    class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-400">
+                                    Staff Registry</h3>
+                                <button @click="openStaffModal()"
+                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm">+
+                                    Register New Staff</button>
+                            </div>
+
+                            <div
+                                class="bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl flex items-center gap-3">
+                                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" placeholder="Filter staff..." x-model="searchQuery"
+                                    class="bg-transparent text-xs w-full focus:outline-none text-slate-700 dark:text-slate-300">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <template x-for="s in getFilteredStaff()" :key="s.id">
+                                    <div class="bg-white dark:bg-slate-900 border rounded-2xl p-5 flex flex-col justify-between gap-4 transition"
+                                        :class="s.status === 'Active' ? 'border-emerald-100 dark:border-slate-800 bg-[#fbfdfc] dark:bg-slate-900/60' : 'border-slate-200 dark:border-slate-800 opacity-60 bg-slate-50 dark:bg-slate-800/20'">
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div class="space-y-1">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-[10px] font-mono font-bold text-slate-400"
+                                                        x-text="s.id"></span>
+                                                    <span
+                                                        class="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full"
+                                                        :class="s.status === 'Active' ? 'bg-emerald-50 dark:bg-emerald-955/45 text-emerald-800 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'"
+                                                        x-text="s.status"></span>
+                                                </div>
+                                                <h4 class="font-extrabold text-slate-900 dark:text-white text-sm"
+                                                    x-text="s.name"></h4>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold"
+                                                    x-text="s.designation"></p>
+                                                <p class="text-xs text-slate-400 dark:text-slate-505 font-mono"
+                                                    x-text="'@' + s.username"></p>
+                                            </div>
+
+                                            <div class="flex items-center gap-1.5">
+                                                <button @click="openStaffModal(s)"
+                                                    class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 transition"
+                                                    title="Modify Information">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button @click="toggleStaffStatus(s.id)"
+                                                    class="p-1.5 rounded-lg transition"
+                                                    :class="s.status === 'Active' ? 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20' : 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20'"
+                                                    :title="s.status === 'Active' ? 'Deactivate Account' : 'Activate Account'">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-505">
+                                            <span class="flex items-center gap-1">
+                                                <svg class="h-3.5 w-3.5 text-emerald-505" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span x-text="s.zone"></span>
+                                            </span>
+                                            <span x-text="s.phone"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+                                x-show="staffFormOpen" style="display: none;">
+                                <div
+                                    class="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md border border-emerald-100 dark:border-slate-850 shadow-xl space-y-4">
+                                    <h4 class="text-sm font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-450"
+                                        x-text="isEditMode ? 'Modify Staff Record' : 'Register New Office Staff'"></h4>
+
+                                    <form @submit.prevent="submitStaffForm()" class="space-y-4 text-xs">
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-505 uppercase tracking-wider">Full
+                                                Name</label>
+                                            <input type="text" required x-model="staffForm.name"
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-100">
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="font-bold text-slate-550 uppercase tracking-wider">Username
+                                                    Handle</label>
+                                                <input type="text" x-model="staffForm.username"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-100"
+                                                    placeholder="user_handle">
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="font-bold text-slate-550 uppercase tracking-wider">Designation</label>
+                                                <input type="text" x-model="staffForm.designation"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-100"
+                                                    placeholder="e.g., Coordinator">
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="space-y-1">
+                                                <label class="font-bold text-slate-550 uppercase tracking-wider">Email
+                                                    Address</label>
+                                                <input type="email" required x-model="staffForm.emailId"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-101"
+                                                    placeholder="name@ecobin.com">
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label class="font-bold text-slate-550 uppercase tracking-wider">Phone
+                                                    Number</label>
+                                                <input type="text" required x-model="staffForm.phoneNumber"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-101"
+                                                    placeholder="+91 9900000000">
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Operational
+                                                District</label>
+                                            <select required x-model="staffForm.district"
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-101">
+                                                <option value="Kottayam">Kottayam</option>
+                                                <option value="Ernakulam">Ernakulam</option>
+                                                <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                                                <option value="Kozhikode">Kozhikode</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Designated
+                                                Workspace Zone</label>
+                                            <select x-model="staffForm.zone"
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 focus:outline-none dark:text-slate-100">
+                                                <option value="Zone A (North)">Zone A (North)</option>
+                                                <option value="Zone B (East)">Zone B (East)</option>
+                                                <option value="Zone C (West)">Zone C (West)</option>
+                                                <option value="Zone D (South)">Zone D (South)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 py-1">
+                                            <input type="checkbox" id="staffConsent" x-model="staffForm.consent" checked
+                                                class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded">
+                                            <label for="staffConsent"
+                                                class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 select-none">
+                                                Grant system database authorization consent profile
+                                            </label>
+                                        </div>
+
+                                        <div class="flex gap-2.5 pt-2">
+                                            <button type="button" @click="staffFormOpen = false"
+                                                class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold p-3 rounded-xl transition">Cancel</button>
+                                            <button type="submit"
+                                                class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl transition shadow-sm uppercase tracking-wider font-mono text-[11px]">Save
+                                                Details</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'collection'" class="space-y-6 animate-fadeIn">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h3
+                                    class="text-sm font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-400">
+                                    Collection summaries</h3>
+                                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1">
+                                    <button @click="periodFilter = 'Daily'"
+                                        class="px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition"
+                                        :class="periodFilter === 'Daily' ? 'bg-white dark:bg-slate-900 text-emerald-905 dark:text-emerald-450 shadow-sm' : 'text-slate-400 hover:text-slate-600'">Daily</button>
+                                    <button @click="periodFilter = 'Weekly'"
+                                        class="px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition"
+                                        :class="periodFilter === 'Weekly' ? 'bg-white dark:bg-slate-900 text-emerald-905 dark:text-emerald-450 shadow-sm' : 'text-slate-400 hover:text-slate-600'">Weekly</button>
+                                    <button @click="periodFilter = 'Monthly'"
+                                        class="px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition"
+                                        :class="periodFilter === 'Monthly' ? 'bg-white dark:bg-slate-900 text-emerald-905 dark:text-emerald-450 shadow-sm' : 'text-slate-400 hover:text-slate-600'">Monthly</button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div
+                                    class="p-5 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100 dark:border-slate-800 rounded-2xl space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total
+                                        Collection Requests</p>
+                                    <p class="text-2xl font-black text-emerald-950 dark:text-slate-200"
+                                        x-text="collectionData[periodFilter].requests"></p>
+                                </div>
+                                <div
+                                    class="p-5 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100 dark:border-slate-800 rounded-2xl space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed
+                                        Collections</p>
+                                    <p class="text-2xl font-black text-emerald-950 dark:text-slate-200"
+                                        x-text="collectionData[periodFilter].completed"></p>
+                                </div>
+                                <div
+                                    class="p-5 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100 dark:border-slate-800 rounded-2xl space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Performance
+                                        Rating</p>
+                                    <p class="text-2xl font-black text-emerald-950 dark:text-slate-200"
+                                        x-text="collectionData[periodFilter].performance"></p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-2xl space-y-4">
+                                <div
+                                    class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <h4
+                                        class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">
+                                        Waste Breakdown Statistics</h4>
+                                    <span
+                                        class="text-[9px] bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-2.5 py-0.5 rounded-full font-bold border border-amber-100 dark:border-amber-900 uppercase">Biodegradables
+                                        Excluded</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div
+                                            class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Dry Recyclables & Plastics</span>
+                                            <span
+                                                x-text="collectionData[periodFilter].breakdown.recyclable + '%'"></span>
+                                        </div>
+                                        <div
+                                            class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                                :style="'width: ' + collectionData[periodFilter].breakdown.recyclable + '%'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div
+                                            class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Glass & Metal Waste</span>
+                                            <span
+                                                x-text="collectionData[periodFilter].breakdown.glassMetal + '%'"></span>
+                                        </div>
+                                        <div
+                                            class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-emerald-400 h-full rounded-full transition-all duration-500"
+                                                :style="'width: ' + collectionData[periodFilter].breakdown.glassMetal + '%'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div
+                                            class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                                            <span>Hazardous & Electronic Waste</span>
+                                            <span
+                                                x-text="collectionData[periodFilter].breakdown.hazardous + '%'"></span>
+                                        </div>
+                                        <div
+                                            class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                            <div class="bg-teal-500 h-full rounded-full transition-all duration-500"
+                                                :style="'width: ' + collectionData[periodFilter].breakdown.hazardous + '%'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'rewards'" class="space-y-6 animate-fadeIn">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-emerald-950 dark:text-emerald-400">
+                                Reward program Reports</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div
+                                    class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total
+                                        Reward Points Issued</p>
+                                    <div class="mt-4 shadow-sm">
+                                        <h4 class="text-3xl font-extrabold text-emerald-950 dark:text-slate-250"
+                                            x-text="rewardStats.totalPoints"></h4>
+                                    </div>
+                                </div>
+                                <div
+                                    class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-805 p-6 rounded-2xl flex flex-col justify-between">
+                                    <p class="text-[10px] font-bold text-slate-405 uppercase tracking-widest">User
+                                        Participation Rate</p>
+                                    <div class="mt-4">
+                                        <h4 class="text-3xl font-extrabold text-emerald-955 dark:text-slate-250"
+                                            x-text="rewardStats.participationRate"></h4>
+                                    </div>
+                                </div>
+                                <div
+                                    class="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-805 p-6 rounded-2xl flex flex-col justify-between">
+                                    <p class="text-[10px] font-bold text-slate-405 uppercase tracking-widest">Total
+                                        Claims Handled</p>
+                                    <div class="mt-4">
+                                        <h4 class="text-3xl font-extrabold text-emerald-955 dark:text-slate-250"
+                                            x-text="rewardStats.vouchersRedeemed"></h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6">
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300 mb-4">
+                                    Recent Reward distributions</h4>
+                                <div class="space-y-3.5">
+                                    <template x-for="r in rewardStats.transactions" :key="r.id">
+                                        <div
+                                            class="flex items-center justify-between text-xs p-3.5 bg-slate-50/50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <div>
+                                                <p class="font-bold text-slate-800 dark:text-slate-200" x-text="r.user">
+                                                </p>
+                                                <p class="text-slate-400 dark:text-slate-505" x-text="r.timestamp"></p>
+                                            </div>
+                                            <div class="text-emerald-600 dark:text-emerald-400 font-black"
+                                                x-text="'+' + r.points + ' PTS'"></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'complaints'" class="space-y-6 animate-fadeIn">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-400">
+                                Complaint reports</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div
+                                    class="p-5 bg-[#fbfdfc] dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 rounded-2xl text-center space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Resolved
+                                        Complaints</p>
+                                    <p class="text-2xl font-black text-emerald-700 dark:text-emerald-400"
+                                        x-text="complaintStats.resolved"></p>
+                                </div>
+                                <div
+                                    class="p-5 bg-rose-50/20 dark:bg-rose-955/10 border border-rose-100 dark:border-slate-805 rounded-2xl text-center space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-405 uppercase tracking-wider">Unresolved
+                                        Complaints</p>
+                                    <p class="text-2xl font-black text-rose-700 dark:text-rose-450"
+                                        x-text="complaintStats.unresolved"></p>
+                                </div>
+                                <div
+                                    class="p-5 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-850 rounded-2xl text-center space-y-1">
+                                    <p class="text-[10px] font-bold text-slate-405 uppercase tracking-wider">Resolution
+                                        Rate</p>
+                                    <p class="text-2xl font-black text-slate-900 dark:text-slate-200"
+                                        x-text="complaintStats.rate"></p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300">
+                                    Incident Logs</h4>
+                                <div class="space-y-3">
+                                    <template x-for="c in complaintStats.tickets" :key="c.id">
+                                        <div
+                                            class="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl space-y-1.5 text-xs">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-slate-800 dark:text-slate-300"
+                                                    x-text="c.id"></span>
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                                                    :class="c.status === 'Resolved' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-455' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-455'"
+                                                    x-text="c.status"></span>
+                                            </div>
+                                            <p class="text-slate-600 dark:text-slate-400"><strong
+                                                    class="text-slate-707 dark:text-slate-300">Topic:</strong> <span
+                                                    x-text="c.issue"></span></p>
+                                            <p class="text-slate-500 font-mono text-[10px]"
+                                                x-text="'Reported on: ' + c.date"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+
+                <template x-if="user.role === 'STAFF'">
+                    <div class="space-y-8" x-data="staffWorkspace()">
+
+                        <div class="flex border-b border-slate-100 dark:border-slate-800 gap-6 overflow-x-auto pb-px">
+                            <button @click="currentSubTab = 'requests'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'requests' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Collection Requests (<span x-text="requests.length"></span>)
+                            </button>
+                            <button @click="currentSubTab = 'schedules'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'schedules' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Schedules & Dispatches
+                            </button>
+                            <button @click="currentSubTab = 'workers'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'workers' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Worker Registry
+                            </button>
+                            <button @click="currentSubTab = 'expenses'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'expenses' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                App Filed Expenses (<span
+                                    x-text="expenses.filter(e => e.status === 'Pending').length"></span>)
+                            </button>
+                            <button @click="currentSubTab = 'complaints'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'complaints' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Complaints Desk (<span
+                                    x-text="complaints.filter(c => c.status !== 'Resolved').length"></span>)
+                            </button>
+                            <button @click="currentSubTab = 'rewards'"
+                                class="pb-3 text-xs font-bold uppercase tracking-wider transition border-b-2 whitespace-nowrap"
+                                :class="currentSubTab === 'rewards' ? 'text-emerald-600 border-emerald-600 dark:text-emerald-400 dark:border-emerald-400' : 'text-slate-400 border-transparent hover:text-slate-600 dark:hover:text-slate-300'">
+                                Reward Matrix
+                            </button>
+                        </div>
+
+                        <div x-show="currentSubTab === 'requests'" class="space-y-6 animate-fadeIn">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h3
+                                    class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-400">
+                                    Collection Pipeline</h3>
+                                <span
+                                    class="text-[9px] bg-emerald-50 dark:bg-emerald-950/45 text-emerald-850 dark:text-emerald-400 px-2.5 py-0.5 font-bold rounded-full border border-emerald-100 dark:border-emerald-900 uppercase">Non-Biodegradables
+                                    Only</span>
+                            </div>
+
+                            <div class="space-y-4">
+                                <template x-for="req in requests" :key="req.id">
+                                    <div
+                                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm hover:border-emerald-200 dark:hover:border-slate-700 transition">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-mono font-bold text-slate-400"
+                                                    x-text="req.id"></span>
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border"
+                                                    :class="req.status === 'Submitted' ? 'bg-indigo-50 border-indigo-100 text-indigo-800 dark:bg-indigo-950/45 dark:border-indigo-900 dark:text-indigo-400' :
+                                                              (req.status === 'Verified' ? 'bg-sky-50 border-sky-100 text-sky-800 dark:bg-sky-955/45 dark:border-sky-900 dark:text-sky-400' :
+                                                              (req.status === 'Assigned' ? 'bg-amber-50 border-amber-100 text-amber-805 dark:bg-amber-955/45 dark:border-amber-900 dark:text-amber-400' :
+                                                              (req.status === 'In Progress' ? 'bg-blue-50 border-blue-100 text-blue-800 dark:bg-blue-955/45 dark:border-blue-900 dark:text-blue-400' : 'bg-emerald-50 border-emerald-100 text-emerald-800 dark:bg-emerald-955/45 dark:border-emerald-900 dark:text-emerald-455')))"
+                                                    x-text="req.status"></span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 font-mono"
+                                                x-text="req.timestamp"></span>
+                                        </div>
+
+                                        <div
+                                            class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1 border-b border-slate-50 dark:border-slate-800 pb-3">
+                                            <div>
+                                                <p class="font-bold text-slate-900 dark:text-white"
+                                                    x-text="req.userName"></p>
+                                                <p class="text-slate-400 dark:text-slate-550"
+                                                    x-text="'Phone: ' + req.phone"></p>
+                                                <p class="text-slate-400 dark:text-slate-550 mt-1"
+                                                    x-text="'Location: ' + req.address"></p>
+                                            </div>
+                                            <div>
+                                                <p class="text-emerald-700 dark:text-emerald-400 font-bold"
+                                                    x-text="req.wasteType"></p>
+                                                <p class="text-slate-400 dark:text-slate-550"
+                                                    x-text="'Load Weight: ' + req.quantity"></p>
+                                                <p class="text-slate-400 dark:text-slate-550"
+                                                    x-text="'Desired Date: ' + req.preferredDate"></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex gap-2 justify-end">
+                                            <template x-if="req.status === 'Submitted'">
+                                                <div class="flex gap-2">
+                                                    <button @click="updateRequestStatus(req.id, 'Verified')"
+                                                        class="bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold px-4 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-900 transition text-xs">Verify
+                                                        Request</button>
+                                                    <button @click="updateRequestStatus(req.id, 'Rejected')"
+                                                        class="bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-950 text-rose-800 dark:text-rose-455 font-bold px-4 py-1.5 rounded-xl border border-rose-100 dark:border-rose-900 transition text-xs">Reject</button>
+                                                </div>
+                                            </template>
+                                            <template x-if="req.status === 'Verified'">
+                                                <button @click="initiateScheduling(req)"
+                                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-xl transition text-xs">Assign
+                                                    Route & Scheduler</button>
+                                            </template>
+                                            <template x-if="req.status === 'Assigned'">
+                                                <button @click="updateRequestStatus(req.id, 'In Progress')"
+                                                    class="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white dark:text-slate-101 font-bold px-4 py-1.5 rounded-xl transition text-xs border dark:border-slate-700">Begin
+                                                    Route Collection</button>
+                                            </template>
+                                            <template x-if="req.status === 'In Progress'">
+                                                <button @click="promptPointDistribution(req)"
+                                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-xl transition text-xs">Complete
+                                                    pickup & Award Points</button>
+                                            </template>
+                                            <template x-if="req.status === 'Completed'">
+                                                <span
+                                                    class="text-emerald-600 dark:text-emerald-455 font-bold text-xs flex items-center gap-1">✔
+                                                    Picked up & Disposed</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'schedules'" class="space-y-6 animate-fadeIn">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-400">
+                                Dispatches and Schedules</h3>
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-805 p-5 rounded-2xl space-y-4">
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">
+                                    Dispatch Board</h4>
+                                <div class="space-y-3.5">
+                                    <template x-for="sch in schedules" :key="sch.id">
+                                        <div
+                                            class="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white dark:bg-slate-850 border border-slate-150 dark:border-slate-800 rounded-xl gap-4 text-xs">
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-mono font-bold text-slate-400"
+                                                        x-text="sch.id"></span>
+                                                    <span
+                                                        class="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded"
+                                                        :class="sch.status === 'Dispatched' ? 'bg-amber-100 text-amber-900 dark:bg-amber-955/50 dark:text-amber-400' : 'bg-emerald-50 text-emerald-808 dark:bg-emerald-955/50 dark:text-emerald-400'"
+                                                        x-text="sch.status"></span>
+                                                </div>
+                                                <h5 class="font-extrabold text-slate-805 dark:text-slate-200 mt-1"
+                                                    x-text="sch.worker + ' (' + sch.zone + ')'"></h5>
+                                                <p class="text-slate-400 dark:text-slate-500 text-[11px] mt-0.5"
+                                                    x-text="'Target Request: ' + sch.requestId + ' | Date: ' + sch.date + ' @ ' + sch.time">
+                                                </p>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <template x-if="sch.status === 'Dispatched'">
+                                                    <button @click="completeSchedule(sch.id, sch.requestId)"
+                                                        class="bg-emerald-50 dark:bg-emerald-955/50 hover:bg-emerald-100 dark:hover:bg-emerald-950 text-emerald-800 dark:text-emerald-400 font-bold px-3 py-1.5 rounded-xl border border-emerald-202 dark:border-slate-700 transition text-[10px]">Complete
+                                                        Schedule</button>
+                                                </template>
+                                                <template x-if="sch.status === 'Completed'">
+                                                    <span class="text-emerald-600 dark:text-emerald-455 font-bold">✔
+                                                        Completed</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+                                x-show="scheduleModalOpen" style="display: none;">
+                                <div
+                                    class="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md border border-emerald-100 dark:border-slate-800 shadow-xl space-y-4">
+                                    <h4
+                                        class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-455">
+                                        Configure Collection Schedule</h4>
+                                    <form @submit.prevent="saveSchedule()" class="space-y-4 text-xs">
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Target
+                                                Request ID</label>
+                                            <input type="text" readonly :value="activeRequestForSchedule?.id"
+                                                class="w-full bg-slate-101 dark:bg-slate-800 border rounded-xl p-3 font-mono dark:text-slate-101 dark:border-slate-700">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="font-bold text-slate-550 uppercase tracking-wider">Date</label>
+                                                <input type="date" required x-model="scheduleForm.date"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700">
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label class="font-bold text-slate-550 uppercase tracking-wider">Time
+                                                    Slot</label>
+                                                <select x-model="scheduleForm.time"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700">
+                                                    <option value="08:00 AM">08:00 AM - 10:00 AM</option>
+                                                    <option value="11:30 AM">11:30 AM - 01:30 PM</option>
+                                                    <option value="03:00 PM">03:00 PM - 05:00 PM</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Assign
+                                                Active Worker</label>
+                                            <select x-model="scheduleForm.workerId" required
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700">
+                                                <option value="">-- Choose Field Worker --</option>
+                                                <template x-for="w in workers.filter(w => w.status === 'Active')"
+                                                    :key="w.id">
+                                                    <option :value="w.id" x-text="w.name + ' (' + w.zone + ')'">
+                                                    </option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div class="flex gap-2.5 pt-2">
+                                            <button type="button" @click="scheduleModalOpen = false"
+                                                class="flex-1 bg-slate-101 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold p-3 rounded-xl transition">Cancel</button>
+                                            <button type="submit"
+                                                class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl transition shadow-sm">Confirm
+                                                Dispatch</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'workers'" class="space-y-6 animate-fadeIn">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <h3
+                                    class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-400">
+                                    Field Workers</h3>
+                                <button @click="openWorkerModal()"
+                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-sm">+
+                                    Add New Worker</button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <template x-for="w in workers" :key="w.id">
+                                    <div
+                                        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
+                                        <div class="flex items-start justify-between">
+                                            <div class="space-y-1">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="text-[10px] font-mono text-slate-400 font-bold"
+                                                        x-text="w.id"></span>
+                                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold"
+                                                        :class="w.status === 'Active' ? 'bg-emerald-50 dark:bg-emerald-955/45 text-emerald-800 dark:text-emerald-455' : 'bg-slate-202 dark:bg-slate-800 text-slate-600 dark:text-slate-405'"
+                                                        x-text="w.status"></span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-900 dark:text-white text-sm"
+                                                    x-text="w.name"></h4>
+                                                <p class="text-xs text-slate-500 dark:text-slate-405"
+                                                    x-text="'Sector: ' + w.zone"></p>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <button @click="openWorkerModal(w)"
+                                                    class="p-1.5 hover:bg-slate-101 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-404 transition">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="flex justify-between items-center text-xs pt-3 border-t border-slate-100 dark:border-slate-800 text-slate-505">
+                                            <span x-text="'Contact: ' + w.contact"></span>
+                                            <span class="font-semibold"
+                                                x-text="'Pickups Handled: ' + w.completedJobs"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+                                x-show="workerModalOpen" style="display: none;">
+                                <div
+                                    class="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md border border-emerald-100 dark:border-slate-850 shadow-xl space-y-4">
+                                    <h4 class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-450"
+                                        x-text="isEditWorker ? 'Modify Worker Profile' : 'Register New Worker'"></h4>
+                                    <form @submit.prevent="submitWorkerForm()" class="space-y-4 text-xs">
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Full
+                                                Name</label>
+                                            <input type="text" required x-model="workerForm.name"
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Contact
+                                                Number</label>
+                                            <input type="text" required x-model="workerForm.contact"
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="space-y-1">
+                                                <label class="font-bold text-slate-555 uppercase tracking-wider">Zone
+                                                    Sector</label>
+                                                <select x-model="workerForm.zone"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101">
+                                                    <option value="Zone A (North)">Zone A (North)</option>
+                                                    <option value="Zone B (East)">Zone B (East)</option>
+                                                    <option value="Zone C (West)">Zone C (West)</option>
+                                                    <option value="Zone D (South)">Zone D (South)</option>
+                                                </select>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label
+                                                    class="font-bold text-slate-555 uppercase tracking-wider">Status</label>
+                                                <select x-model="workerForm.status"
+                                                    class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101">
+                                                    <option value="Active">Active</option>
+                                                    <option value="Inactive">Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2.5 pt-2">
+                                            <button type="button" @click="workerModalOpen = false"
+                                                class="flex-1 bg-slate-101 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold p-3 rounded-xl transition">Cancel</button>
+                                            <button type="submit"
+                                                class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl transition shadow-sm">Save
+                                                Record</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'expenses'" class="space-y-6 animate-fadeIn">
+                            <div class="flex items-center justify-between">
+                                <h3
+                                    class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-450">
+                                    Incidental Mobile Expenses</h3>
+                                <span
+                                    class="text-[10px] bg-emerald-50 dark:bg-emerald-955/45 text-emerald-800 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-emerald-900 font-mono">App
+                                    Sync Active</span>
+                            </div>
+                            <div class="grid gap-4">
+                                <template x-for="exp in expenses" :key="exp.id">
+                                    <div
+                                        class="bg-white dark:bg-slate-900 border border-slate-201 dark:border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row justify-between gap-6 transition-all">
+                                        <div class="flex gap-4 items-start">
+                                            <div
+                                                class="w-24 h-24 bg-slate-101 dark:bg-slate-800 rounded-xl flex-shrink-0 flex flex-col items-center justify-center text-slate-400 border border-slate-201 dark:border-slate-700 overflow-hidden relative shadow-inner">
+                                                <template x-if="exp.billPhoto">
+                                                    <img :src="exp.billPhoto" class="w-full h-full object-cover"
+                                                        alt="Uploaded Receipt">
+                                                </template>
+                                                <template x-if="!exp.billPhoto">
+                                                    <div class="text-center p-2 text-slate-400 dark:text-slate-650">
+                                                        <svg class="w-6 h-6 mx-auto mb-1 opacity-60" fill="none"
+                                                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M4 16l4.586-4.586a1 1 0 011.414 0L16 17m0 0l1-1m-1 1k-3-3m-1.414-1.414M12.586 11L12 11.586M11 11h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                                                        </svg>
+                                                        <span
+                                                            class="text-[8px] font-bold uppercase block tracking-wider">No
+                                                            Proof</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <h4 class="text-xs font-extrabold text-slate-900 dark:text-white"
+                                                        x-text="exp.workerName"></h4>
+                                                    <span
+                                                        class="text-[9px] bg-slate-202 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono font-bold"
+                                                        x-text="exp.activeRoute"></span>
+                                                    <template x-if="exp.status !== 'Pending'">
+                                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded"
+                                                            :class="exp.status === 'Approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-955/60 dark:text-emerald-400' : 'bg-rose-100 text-rose-800 dark:bg-rose-955/60 dark:text-rose-455'"
+                                                            x-text="exp.status"></span>
+                                                    </template>
+                                                </div>
+                                                <p class="text-base font-extrabold text-emerald-600 dark:text-emerald-400 animate-pulse"
+                                                    x-text="exp.amount"></p>
+                                                <p class="text-xs text-slate-600 dark:text-slate-400"
+                                                    x-text="exp.expenseReason"></p>
+                                                <p class="text-[10px] text-slate-400 font-mono"
+                                                    x-text="'Sync Timestamp: ' + exp.uploadedAt"></p>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="flex md:flex-col justify-end gap-2 shrink-0 self-center md:self-stretch">
+                                            <template x-if="exp.status === 'Pending'">
+                                                <div class="flex md:flex-col gap-2 w-full">
+                                                    <button @click="processExpenseAction(exp.id, 'Approved')"
+                                                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-sm whitespace-nowrap">Approve
+                                                        Reimburse</button>
+                                                    <button @click="processExpenseAction(exp.id, 'Flagged')"
+                                                        class="px-4 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-955/30 dark:hover:bg-rose-950 text-rose-600 dark:text-rose-405 text-xs font-bold rounded-xl transition border border-rose-100 dark:border-rose-900 whitespace-nowrap">Flag
+                                                        Claim</button>
+                                                </div>
+                                            </template>
+                                            <template x-if="exp.status !== 'Pending'">
+                                                <div
+                                                    class="text-right text-xs font-semibold text-slate-400 dark:text-slate-600 self-center md:self-end">
+                                                    Archived Ledger Log</div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'complaints'" class="space-y-6 animate-fadeIn">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-450">
+                                Complaints Desk</h3>
+                            <div class="space-y-4">
+                                <template x-for="comp in complaints" :key="comp.id">
+                                    <div
+                                        class="bg-white dark:bg-slate-900 border border-slate-202 dark:border-slate-850 rounded-2xl p-5 space-y-3.5 shadow-sm">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-mono font-bold text-slate-400"
+                                                    x-text="comp.id"></span>
+                                                <span class="px-2 py-0.5 rounded text-[9px] font-bold border"
+                                                    :class="comp.status === 'Pending' ? 'bg-rose-50 border-rose-100 text-rose-800 dark:bg-rose-955/45 dark:border-rose-900 dark:text-rose-400' :
+                                                              (comp.status === 'Assigned' ? 'bg-amber-50 border-amber-100 text-amber-808 dark:bg-amber-955/45 dark:border-amber-900 dark:text-amber-400' : 'bg-emerald-50 border-emerald-100 text-emerald-808 dark:bg-emerald-955/45 dark:border-emerald-900 dark:text-emerald-455')"
+                                                    x-text="comp.status"></span>
+                                            </div>
+                                            <span
+                                                class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold"
+                                                x-text="comp.reporterType"></span>
+                                        </div>
+                                        <div class="text-xs space-y-1">
+                                            <p class="text-slate-800 dark:text-slate-200 font-semibold"
+                                                x-text="'Issue: ' + comp.issue"></p>
+                                            <p class="text-slate-500" x-text="'Location: ' + comp.address"></p>
+                                            <p class="text-slate-500" x-text="'Submitted on: ' + comp.date"></p>
+                                            <template x-if="comp.assignedWorker">
+                                                <p class="text-emerald-700 dark:text-emerald-400 font-bold mt-1.5"
+                                                    x-text="'Assigned Cleanup Crew: ' + comp.assignedWorker"></p>
+                                            </template>
+                                        </div>
+                                        <div
+                                            class="flex gap-2 justify-end pt-2 border-t border-slate-50 dark:border-slate-800">
+                                            <template x-if="comp.status === 'Pending'">
+                                                <button @click="openComplaintAssignment(comp)"
+                                                    class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl transition text-[11px]">Dispatch
+                                                    Cleanup Worker</button>
+                                            </template>
+                                            <template x-if="comp.status === 'Assigned'">
+                                                <button @click="resolveComplaint(comp.id)"
+                                                    class="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-xl transition text-[11px] border dark:border-slate-700">Verify
+                                                    Area Cleaned & Close</button>
+                                            </template>
+                                            <template x-if="comp.status === 'Resolved'">
+                                                <span
+                                                    class="text-emerald-600 dark:text-emerald-455 font-bold text-xs flex items-center gap-1">✔
+                                                    Resolved</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn"
+                                x-show="complaintModalOpen" style="display: none;">
+                                <div
+                                    class="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md border border-emerald-100 dark:border-slate-800 shadow-xl space-y-4">
+                                    <h4
+                                        class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-455 font-sans">
+                                        Dispatch Crew for Complaint</h4>
+                                    <form @submit.prevent="assignComplaintCrew()" class="space-y-4 text-xs">
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Complaint
+                                                Ticket</label>
+                                            <input type="text" readonly :value="activeComplaint?.id"
+                                                class="w-full bg-slate-101 dark:bg-slate-800 border rounded-xl p-3 font-mono dark:text-slate-101 dark:border-slate-700">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="font-bold text-slate-550 uppercase tracking-wider">Select
+                                                Worker</label>
+                                            <select x-model="selectedComplaintWorkerId" required
+                                                class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700">
+                                                <option value="">-- Choose Field Worker --</option>
+                                                <template x-for="w in workers.filter(w => w.status === 'Active')"
+                                                    :key="w.id">
+                                                    <option :value="w.id" x-text="w.name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div class="flex gap-2.5 pt-2">
+                                            <button type="button" @click="complaintModalOpen = false"
+                                                class="flex-1 bg-slate-101 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold p-3 rounded-xl transition">Cancel</button>
+                                            <button type="submit"
+                                                class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl transition shadow-sm">Dispatch
+                                                Cleanup</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="currentSubTab === 'rewards'" class="space-y-6 animate-fadeIn">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-emerald-955 dark:text-emerald-450">
+                                Rewards and Redemptions</h3>
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-805 p-5 rounded-2xl space-y-4">
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">
+                                    Pending Voucher Claims</h4>
+                                <div class="space-y-3">
+                                    <template x-for="claim in claims" :key="claim.id">
+                                        <div
+                                            class="p-4 bg-white dark:bg-slate-850 border border-slate-150 dark:border-slate-800 rounded-xl text-xs space-y-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-extrabold text-slate-808 dark:text-slate-251"
+                                                    x-text="claim.userName"></span>
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border"
+                                                    :class="claim.status === 'Pending' ? 'bg-amber-50 border-amber-100 text-amber-808 dark:bg-amber-955/45 dark:border-amber-900 dark:text-amber-400' : 'bg-emerald-50 border-emerald-100 text-emerald-808 dark:bg-emerald-955/45 dark:border-emerald-900 dark:text-emerald-455'"
+                                                    x-text="claim.status"></span>
+                                            </div>
+                                            <p class="text-slate-600 dark:text-slate-400"><strong
+                                                    class="text-slate-707 dark:text-slate-300">Voucher Package:</strong>
+                                                <span x-text="claim.voucherName"></span>
+                                            </p>
+                                            <p class="text-slate-600 dark:text-slate-400"><strong
+                                                    class="text-slate-707 dark:text-slate-300">Cost:</strong> <span
+                                                    class="font-bold text-emerald-700 dark:text-emerald-455"
+                                                    x-text="claim.pointsCost + ' PTS'"></span></p>
+                                            <div class="flex gap-2 pt-1 justify-end">
+                                                <template x-if="claim.status === 'Pending'">
+                                                    <button @click="processVoucherClaim(claim.id)"
+                                                        class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg transition text-[10px]">Approve
+                                                        & Issue Voucher Code</button>
+                                                </template>
+                                                <template x-if="claim.status === 'Issued'">
+                                                    <span class="text-emerald-600 dark:text-emerald-455 font-bold">✔
+                                                        Code Issued</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-2xl space-y-4">
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-300 border-b dark:border-slate-800 pb-2">
+                                    Manual Points Credit Assignment</h4>
+                                <form @submit.prevent="issueManualPoints()" class="space-y-4 text-xs max-w-sm">
+                                    <div class="space-y-1">
+                                        <label class="font-bold text-slate-550 uppercase tracking-wider">User Identity
+                                            (App Login)</label>
+                                        <input type="text" required x-model="pointForm.user"
+                                            class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700"
+                                            placeholder="Enter username / register tag">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="font-bold text-slate-550 uppercase tracking-wider">Points
+                                            Count</label>
+                                        <input type="number" required x-model="pointForm.points"
+                                            class="w-full bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 focus:outline-none dark:text-slate-101 dark:border-slate-700"
+                                            placeholder="e.g., 100">
+                                    </div>
+                                    <button type="submit"
+                                        class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl transition text-xs shadow-sm">Credit
+                                        Reward Balance</button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+
+            </div>
+        </template>
+
+    </main>
+
+    <footer
+        class="py-6 border-t border-emerald-100/30 dark:border-slate-900 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md text-center text-[10px] text-emerald-800/60 dark:text-emerald-505 font-semibold uppercase tracking-wider mt-auto">
+        © 2026 ECO BIN System • Waste Management Control Terminal • Mobile Integration Enabled
+    </footer>
+
+    <script>
+        // State system for Office Staff operations tab workspace
+        function staffWorkspace() {
+            return {
+                currentSubTab: 'requests',
+                requests: [
+                    { id: 'REQ-2026-004', userName: 'Anil Kumar', phone: '+91 9447551122', wasteType: 'Dry Recyclables & Plastic Containers', quantity: '15 Kg', address: 'Rose Villa, Kanjikuzhy, Zone B (East)', preferredDate: '2026-06-03', status: 'Submitted', timestamp: '2026-06-02 09:15 AM' },
+                    { id: 'REQ-2026-005', userName: 'Sreedevi Amma', phone: '+91 9846123456', wasteType: 'Broken Glass Bottles & Metals', quantity: '8 Kg', address: 'Flat 4B, Heera Heights, Zone B (East)', preferredDate: '2026-06-04', status: 'Verified', timestamp: '2026-06-02 10:30 AM' },
+                    { id: 'REQ-2026-006', userName: 'Dr. George Thomas', phone: '+91 9037112233', wasteType: 'Hazardous Electronic E-Waste', quantity: '4 Kg', address: 'Clinic Junction, Zone B (East)', preferredDate: '2026-06-02', status: 'In Progress', timestamp: '2026-06-01 02:00 PM' }
+                ],
+                schedules: [
+                    { id: 'SCH-105', date: '2026-06-03', time: '08:00 AM', worker: 'Ramesh Chennithala', zone: 'Zone B (East)', status: 'Dispatched', requestId: 'REQ-2026-006' }
+                ],
+                scheduleModalOpen: false,
+                activeRequestForSchedule: null,
+                scheduleForm: { date: '', time: '08:00 AM', workerId: '' },
+                workers: [
+                    { id: 'WRK001', name: 'Ramesh Chennithala', contact: '8129033445', zone: 'Zone B (East)', status: 'Active', completedJobs: 48 },
+                    { id: 'WRK002', name: 'Vikraman Pillai', contact: '7012044556', zone: 'Zone B (East)', status: 'Active', completedJobs: 35 },
+                    { id: 'WRK003', name: 'John Kurian', contact: '9037055667', zone: 'Zone C (West)', status: 'Inactive', completedJobs: 22 }
+                ],
+                workerModalOpen: false,
+                isEditWorker: false,
+                workerForm: { id: '', name: '', contact: '', zone: 'Zone B (East)', status: 'Active' },
+                expenses: [
+                    { id: 101, workerName: 'Ramesh Chennithala', activeRoute: 'Route-East-B', expenseReason: 'Refuel run for vehicle compression tank', amount: '₹2,450', uploadedAt: '2026-06-05 09:30 AM', billPhoto: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=300&q=80', status: 'Pending' },
+                    { id: 102, workerName: 'Vikraman Pillai', activeRoute: 'Route-Metro-A', expenseReason: 'Hydraulic loading lift belt replacement', amount: '₹1,200', uploadedAt: '2026-06-05 11:15 AM', billPhoto: null, status: 'Pending' },
+                    { id: 103, workerName: 'Anandhu Krishna', activeRoute: 'Route-South-D', expenseReason: 'Platform regulatory station sorting clearance toll fee', amount: '₹450', uploadedAt: '2026-06-04 03:00 PM', billPhoto: null, status: 'Approved' }
+                ],
+                complaints: [
+                    { id: 'CMP-701', reporterType: 'Registered User', issue: 'Piles of plastics scattered around public bin.', address: 'Main Road Crossroads, Zone B (East)', status: 'Pending', date: '2026-06-02', assignedWorker: null },
+                    { id: 'CMP-702', reporterType: 'Guest User', issue: 'Discarded computer monitors left near community grounds.', address: 'Playground Lane, Zone B (East)', status: 'Assigned', date: '2026-06-01', assignedWorker: 'Vikraman Pillai' }
+                ],
+                complaintModalOpen: false,
+                activeComplaint: null,
+                selectedComplaintWorkerId: '',
+                claims: [
+                    { id: 'CLM-011', userName: 'Anil Kumar', voucherName: 'Green Groceries ₹100 Coupon', pointsCost: 500, status: 'Pending' },
+                    { id: 'CLM-012', userName: 'Dr. George Thomas', voucherName: 'Urban Transit Bus Pass', pointsCost: 800, status: 'Issued' }
+                ],
+                pointForm: { user: '', points: '' },
+
+                updateRequestStatus(id, nextStatus) {
+                    this.requests = this.requests.map(r => r.id === id ? { ...r, status: nextStatus } : r);
+                    this.$parent.showToastMessage(`Request status updated to ${nextStatus}`);
+                },
+                initiateScheduling(req) {
+                    this.activeRequestForSchedule = req;
+                    this.scheduleForm = { date: req.preferredDate, time: '08:00 AM', workerId: '' };
+                    this.scheduleModalOpen = true;
+                },
+                saveSchedule() {
+                    const assignedWorker = this.workers.find(w => w.id === this.scheduleForm.workerId);
+                    if (!assignedWorker) return;
+
+                    const newSchedId = 'SCH-' + (100 + this.schedules.length + 6);
+                    this.schedules.unshift({
+                        id: newSchedId,
+                        date: this.scheduleForm.date,
+                        time: this.scheduleForm.time,
+                        worker: assignedWorker.name,
+                        zone: this.activeRequestForSchedule.address.split(',').pop().trim(),
+                        status: 'Dispatched',
+                        requestId: this.activeRequestForSchedule.id
+                    });
+                    this.updateRequestStatus(this.activeRequestForSchedule.id, 'Assigned');
+                    this.scheduleModalOpen = false;
+                    this.$parent.showToastMessage('Duty scheduled and dispatched successfully!');
+                },
+                completeSchedule(schedId, reqId) {
+                    this.schedules = this.schedules.map(s => s.id === schedId ? { ...s, status: 'Completed' } : s);
+                    this.requests = this.requests.map(r => r.id === reqId ? { ...r, status: 'In Progress' } : r);
+                    this.$parent.showToastMessage('Schedule accomplished. Ready to award points.');
+                },
+                promptPointDistribution(req) {
+                    this.updateRequestStatus(req.id, 'Completed');
+                    this.$parent.showToastMessage(`100 PTS issued to ${req.userName} for compliant waste recycling.`);
+                },
+                openWorkerModal(selectedWorker = null) {
+                    if (selectedWorker) {
+                        this.isEditWorker = true;
+                        this.workerForm = { ...selectedWorker };
+                    } else {
+                        this.isEditWorker = false;
+                        this.workerForm = { id: '', name: '', contact: '', zone: 'Zone B (East)', status: 'Active' };
+                    }
+                    this.workerModalOpen = true;
+                },
+                submitWorkerForm() {
+                    if (this.isEditWorker) {
+                        this.workers = this.workers.map(w => w.id === this.workerForm.id ? { ...this.workerForm } : w);
+                        this.$parent.showToastMessage(`Worker profile saved: ${this.workerForm.name}`);
+                    } else {
+                        const newId = 'WRK00' + (this.workers.length + 1);
+                        this.workers.push({ ...this.workerForm, id: newId, completedJobs: 0 });
+                        this.$parent.showToastMessage(`Registered worker: ${this.workerForm.name}`);
+                    }
+                    this.workerModalOpen = false;
+                },
+                processExpenseAction(id, resolution) {
+                    this.expenses = this.expenses.map(item => {
+                        if (item.id === id) item.status = resolution;
+                        return item;
+                    });
+                    this.$parent.showToastMessage(`Incidental expense report was marked ${resolution}.`);
+                },
+                openComplaintAssignment(comp) {
+                    this.activeComplaint = comp;
+                    this.selectedComplaintWorkerId = '';
+                    this.complaintModalOpen = true;
+                },
+                assignComplaintCrew() {
+                    const worker = this.workers.find(w => w.id === this.selectedComplaintWorkerId);
+                    if (!worker) return;
+                    this.complaints = this.complaints.map(c => {
+                        if (c.id === this.activeComplaint.id) {
+                            return { ...c, status: 'Assigned', assignedWorker: worker.name };
+                        }
+                        return c;
+                    });
+                    this.complaintModalOpen = false;
+                    this.$parent.showToastMessage(`Dispatched ${worker.name} to cleanup area.`);
+                },
+                resolveComplaint(id) {
+                    this.complaints = this.complaints.map(c => c.id === id ? { ...c, status: 'Resolved' } : c);
+                    this.$parent.showToastMessage('Complaint resolved and marked closed.');
+                },
+                processVoucherClaim(claimId) {
+                    this.claims = this.claims.map(c => c.id === claimId ? { ...c, status: 'Issued' } : c);
+                    this.$parent.showToastMessage('Redemption voucher code generated and transmitted.');
+                },
+                issueManualPoints() {
+                    this.$parent.showToastMessage(`${this.pointForm.points} PTS credited to user account: ${this.pointForm.user}`);
+                    this.pointForm = { user: '', points: '' };
+                }
+            };
+        }
+
+        function adminDashboard() {
+            return {
+                currentSubTab: 'staff',
+                periodFilter: 'Weekly',
+                searchQuery: '',
+                staff: [
+                    { id: 'STF001', name: 'Meera Joseph', email: 'meera.j@ecobin.com', phone: '+91 9447054321', username: 'meera_j', designation: 'Zone Coordinator', zone: 'Zone B (East)', status: 'Active' },
+                    { id: 'STF002', name: 'Aravind Nair', email: 'aravind.n@ecobin.com', phone: '+91 9447012345', username: 'aravind_n', designation: 'Operations Executive', zone: 'Zone A (North)', status: 'Active' },
+                    { id: 'STF003', name: 'Sanjay Kumar', email: 'sanjay.k@ecobin.com', phone: '+91 9846011223', username: 'sanjay_k', designation: 'Logistics Lead', zone: 'Zone C (West)', status: 'Inactive' }
+                ],
+                staffFormOpen: false,
+                isEditMode: false,
+                staffForm: { id: '', name: '', emailId: '', phoneNumber: '', username: '', designation: '', district: 'Kottayam', zone: 'Zone A (North)', status: 'Active', consent: true },
+                collectionData: {
+                    Daily: { requests: 28, completed: 25, performance: '89.2%', breakdown: { recyclable: 55, glassMetal: 35, hazardous: 10 } },
+                    Weekly: { requests: 184, completed: 172, performance: '93.4%', breakdown: { recyclable: 60, glassMetal: 30, hazardous: 10 } },
+                    Monthly: { requests: 742, completed: 710, performance: '95.6%', breakdown: { recyclable: 65, glassMetal: 25, hazardous: 10 } }
+                },
+                rewardStats: {
+                    totalPoints: '1,42,800 PTS',
+                    participationRate: '78.4%',
+                    vouchersRedeemed: '624 Eco-Coupons',
+                    transactions: [
+                        { id: 1, user: 'Anil Kumar', points: 150, timestamp: 'Today, 02:30 PM' },
+                        { id: 2, user: 'Dr. George Thomas', points: 80, timestamp: 'Today, 11:15 AM' },
+                        { id: 3, user: 'Sreedevi Amma', points: 220, timestamp: 'Yesterday, 04:45 PM' }
+                    ]
+                },
+                complaintStats: {
+                    resolved: 34,
+                    unresolved: 4,
+                    rate: '89.4%',
+                    tickets: [
+                        { id: 'TKT-902', issue: 'Collection worker missed Zone B scheduled route.', status: 'Pending', date: '2026-06-02' },
+                        { id: 'TKT-901', issue: 'Dry recyclables littering near Flat 4B parking space.', status: 'Resolved', date: '2026-06-01' },
+                        { id: 'TKT-899', issue: 'App QR code scanner error during point claim.', status: 'Resolved', date: '2026-05-30' }
+                    ]
+                },
+                getFilteredStaff() {
+                    return this.staff.filter(s => {
+                        const term = this.searchQuery.toLowerCase();
+                        return s.name.toLowerCase().includes(term) ||
+                            s.zone.toLowerCase().includes(term) ||
+                            s.username.toLowerCase().includes(term);
+                    });
+                },
+                openStaffModal(selectedStaff = null) {
+                    if (selectedStaff) {
+                        this.isEditMode = true;
+                        this.staffForm = {
+                            id: selectedStaff.id,
+                            name: selectedStaff.name,
+                            emailId: selectedStaff.email,
+                            phoneNumber: selectedStaff.phone,
+                            username: selectedStaff.username,
+                            designation: selectedStaff.designation,
+                            district: selectedStaff.district || 'Kottayam',
+                            zone: selectedStaff.zone,
+                            status: selectedStaff.status,
+                            consent: true
+                        };
+                    } else {
+                        this.isEditMode = false;
+                        this.staffForm = { id: '', name: '', emailId: '', phoneNumber: '', username: '', designation: '', district: 'Kottayam', zone: 'Zone A (North)', status: 'Active', consent: true };
+                    }
+                    this.staffFormOpen = true;
+                },
+                async submitStaffForm() {
+                    const url = 'http://localhost:8081/api/register/staff';
+                    if (this.isEditMode) {
+                        this.staff = this.staff.map(s => s.id === this.staffForm.id ? {
+                            ...s,
+                            name: this.staffForm.name,
+                            email: this.staffForm.emailId,
+                            phone: this.staffForm.phoneNumber,
+                            username: this.staffForm.username,
+                            designation: this.staffForm.designation,
+                            zone: this.staffForm.zone
+                        } : s);
+                        this.$parent.showToastMessage(`Staff details updated locally: ${this.staffForm.name}`);
+                        this.staffFormOpen = false;
+                        return;
+                    }
+                    try {
+                        let response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: this.staffForm.name,
+                                phoneNumber: this.staffForm.phoneNumber,
+                                emailId: this.staffForm.emailId,
+                                district: this.staffForm.district || 'Kottayam',
+                                consent: this.staffForm.consent !== undefined ? this.staffForm.consent : true
+                            })
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            const newStaffMember = {
+                                id: data.collection_worker_id,
+                                name: this.staffForm.name,
+                                email: this.staffForm.emailId,
+                                phone: this.staffForm.phoneNumber,
+                                username: this.staffForm.username || this.staffForm.name.toLowerCase().replace(/\s+/g, '_'),
+                                designation: this.staffForm.designation || 'Office Staff',
+                                zone: this.staffForm.zone,
+                                status: 'Active'
+                            };
+                            this.staff.push(newStaffMember);
+                            alert(`🎉 Staff Registered Successfully!\n\nAssigned ID: ${data.collection_worker_id}\nGenerated Password: ${data.password}`);
+                            this.$parent.showToastMessage(`Registered staff member: ${newStaffMember.name}`);
+                        } else {
+                            let errMsg = await response.text();
+                            this.$parent.showToastMessage(`Registration failed: ${errMsg || 'Server Error'}`);
+                        }
+                    } catch (err) {
+                        console.warn('Backend server unreachable. Applying in-memory fallback.', err);
+                        const simulatedId = 'CS-' + Math.floor(1000 + Math.random() * 9000);
+                        this.staff.push({
+                            id: simulatedId,
+                            name: this.staffForm.name,
+                            email: this.staffForm.emailId,
+                            phone: this.staffForm.phoneNumber,
+                            username: this.staffForm.username || 'simulated_user',
+                            designation: this.staffForm.designation || 'Coordinator',
+                            zone: this.staffForm.zone,
+                            status: 'Active'
+                        });
+                        this.$parent.showToastMessage(`[Simulated] Registered staff member: ${this.staffForm.name}`);
+                    } finally {
+                        this.staffFormOpen = false;
+                    }
+                },
+                toggleStaffStatus(id) {
+                    this.staff = this.staff.map(s => {
+                        if (s.id === id) {
+                            const newStatus = s.status === 'Active' ? 'Inactive' : 'Active';
+                            this.$parent.showToastMessage(`Staff status altered to ${newStatus}`);
+                            return { ...s, status: newStatus };
+                        }
+                        return s;
+                    });
+                }
+            };
+        }
+
+        function loginPortal() {
+            return {
+                credentials: { id: '', password: '', passkey: 'adm_pass' },
+                user: null,
+                loading: false,
+                errorMessage: '',
+                toast: null,
+                darkMode: false,
+                initTheme() {
+                    if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        this.darkMode = true;
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        this.darkMode = false;
+                        document.documentElement.classList.remove('dark');
+                    }
+                },
+                toggleTheme() {
+                    this.darkMode = !this.darkMode;
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+                    localStorage.setItem('darkMode', this.darkMode);
+                },
+                showToastMessage(msg) {
+                    this.toast = msg;
+                    setTimeout(() => { this.toast = null; }, 3000);
+                },
+                autoFill(role) {
+                    if (role === 'admin') {
+                        this.credentials.id = 'admin';
+                        this.credentials.password = 'admin123';
+                        this.credentials.passkey = 'adm_pass';
+                    } else {
+                        this.credentials.id = 'staff01';
+                        this.credentials.password = 'staff123';
+                        this.credentials.passkey = 'office_pass';
+                    }
+                },
+                async submitLogin() {
+                    this.loading = true;
+                    this.errorMessage = '';
+                    try {
+                        let response = await fetch('http://localhost:8081/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: this.credentials.id.trim(),
+                                password: this.credentials.password,
+                                passkey: this.credentials.passkey
+                            })
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.page === 'admin_page') {
+                                this.user = { username: this.credentials.id, role: 'ADMIN', name: data.adminName || 'Chief Administrator' };
+                                this.showToastMessage(`Terminal Authenticated: ${this.user.name}`);
+                            } else if (data.page === 'office_staff_page') {
+                                this.user = { username: this.credentials.id, role: 'STAFF', name: data.collection_worker_name || 'Office Staff Member', zone: data.scheduledZoneName || 'Zone B (East)' };
+                                this.showToastMessage(`Terminal Authenticated: ${this.user.name}`);
+                            } else {
+                                this.errorMessage = `Unsupported layout route: ${data.page}`;
+                            }
+                        } else {
+                            let errText = await response.text();
+                            this.errorMessage = errText || 'Authentication parameters verified failure.';
+                        }
+                    } catch (err) {
+                        console.warn('Backend server connection failure. Booting simulation engine.', err);
+                        let idToCheck = this.credentials.id.trim().toLowerCase();
+                        let passkeyCheck = this.credentials.passkey;
+                        if (passkeyCheck === 'adm_pass' && idToCheck === 'admin' && this.credentials.password === 'admin123') {
+                            this.user = { username: 'admin', role: 'ADMIN', name: 'Chief Administrator' };
+                            this.showToastMessage('Simulated Session: Chief Administrator');
+                        } else if (passkeyCheck === 'office_pass' && (idToCheck === 'staff01' || idToCheck === 'staff') && this.credentials.password === 'staff123') {
+                            this.user = { username: 'staff01', role: 'STAFF', name: 'Meera Joseph (Office Staff)', zone: 'Zone B (East)' };
+                            this.showToastMessage('Simulated Session: Meera Joseph');
+                        } else {
+                            this.errorMessage = 'Offline validation failed. Verify simulator keys.';
+                        }
+                    } bits: {
+                        this.loading = false;
+                    }
+                },
+                logout() {
+                    this.user = null;
+                    this.credentials.id = '';
+                    this.credentials.password = '';
+                    this.showToastMessage('Session closed.');
+                }
+            };
+        }
+    </script>
+</body>
+
+</html>

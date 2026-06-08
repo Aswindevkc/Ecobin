@@ -1,0 +1,103 @@
+{
+    "users": [
+        {
+            "userId": "admin",
+            "password": "admin123",
+            "name": "System Admin",
+            "role": "ADMIN"
+        },
+        {
+            "userId": "staff1",
+            "password": "staff123",
+            "name": "Sarah Connor",
+            "role": "STAFF",
+            "phone": "555-0101",
+            "email": "sarah@ecobin.org",
+            "address": "101 Administration building",
+            "area": "Headquarters"
+        },
+        {
+            "userId": "worker1",
+            "password": "worker123",
+            "name": "John Doe",
+            "role": "WORKER",
+            "phone": "555-0202",
+            "email": "john.doe@ecobin.org",
+            "address": "202 Depot Road",
+            "area": "North Zone"
+        },
+        {
+            "userId": "worker2",
+            "password": "worker123",
+            "name": "Bob Smith",
+            "role": "WORKER",
+            "phone": "555-0303",
+            "email": "bob.smith@ecobin.org",
+            "address": "303 Depot Road",
+            "area": "South Zone"
+        },
+        {
+            "userId": "user1",
+            "password": "user123",
+            "name": "Alice Green",
+            "role": "USER",
+            "phone": "555-0404",
+            "email": "alice.green@gmail.com",
+            "address": "789 Pine Road, North Zone",
+            "area": "North Zone",
+            "rewardPoints": 15.0
+        },
+        {
+            "userId": "hai9",
+            "password": "123456",
+            "name": "Vivek",
+            "phone": "1",
+            "email": "alice@gmail.com",
+            "address": "location",
+            "role": "USER",
+            "rewardPoints": 0.0,
+            "area": "South Zone"
+        },
+        {
+            "userId": "Hitha",
+            "password": "123456",
+            "name": "Hitha M R",
+            "phone": "9991112223",
+            "email": "hitha@gmail.com",
+            "address": "",
+            "role": "STAFF",
+            "area": "Headquarters"
+        }
+    ],
+    "schedules": [
+        {
+            "id": "S-001",
+            "area": "South Zone",
+            "date": "2026-06-05",
+            "time": "11:00",
+            "workerId": "worker2",
+            "status": "Pending"
+        },
+        {
+            "id": "S-002",
+            "area": "North Zone",
+            "date": "2026-06-10",
+            "time": "14:00",
+            "workerId": "worker1",
+            "status": "Pending"
+        },
+        {
+            "id": "S-003",
+            "area": "South Zone",
+            "date": "2026-06-15",
+            "time": "09:00",
+            "workerId": "worker2",
+            "status": "Pending"
+        }
+    ],
+    "requests": [],
+    "payments": [],
+    "leaves": [],
+    "expenses": [],
+    "reports": []
+}
